@@ -8,6 +8,6 @@ namespace Repository
 {
     public class TagsRepository : BaseRepository<Tag>
     {
-        public TagsRepository(AppDbContext dbContext) : base(dbContext) { }
+        public TagsRepository(IDbContextFactory<AppDbContext> dbContextFactory,ITenantResolver tenantResolver) : base(dbContextFactory, tenantResolver) { }
     }
 }

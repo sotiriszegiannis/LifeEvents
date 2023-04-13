@@ -1,10 +1,9 @@
-using Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain
 {    
-    public class LifeEvent:ITable
+    public class LifeEvent:Tenant,ITable
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
@@ -25,11 +24,13 @@ namespace Domain
         [TableColumnAttr]
         public string Name { get; set; }
         [TableColumnAttr]
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public User User { get; set; }
-        public List<Tag> Tags { get; set; }
+        public List<Tag>? Tags { get; set; }
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
         [TableColumnAttr]
         public DateTime DateUpdated { get; set; } = DateTime.UtcNow;
+        [TableColumnAttr]
+        public string? Location { get; set; }
     }
 }

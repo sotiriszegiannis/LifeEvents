@@ -27,18 +27,14 @@
 
  <MudLayout>
         <MudAppBar>
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            eWallet
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />            
         </MudAppBar>
         <MudDrawer @bind-Open="@_drawerOpen">
             <NavMenu />
         </MudDrawer>
         <MudMainContent>
             @Body
-        </MudMainContent>
-        <MudAppBar Bottom="true" Fixed="true" Color="Color.Info" Elevation="1">
-            <LifeEventRegistration></LifeEventRegistration>
-        </MudAppBar>
+        </MudMainContent>        
     </MudLayout>
 
 @code {

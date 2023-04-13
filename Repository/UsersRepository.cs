@@ -8,6 +8,6 @@ namespace Repository
 {
     public class UsersRepository : BaseRepository<User>
     {
-        public UsersRepository(AppDbContext dbContext) : base(dbContext) { }
+        public UsersRepository(IDbContextFactory<AppDbContext> dbContextFactory, ITenantResolver tenantResolver) : base(dbContextFactory, tenantResolver) { }
     }
 }

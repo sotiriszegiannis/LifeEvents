@@ -2,15 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Reflection;
 using Domain;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Repository
 {    
     public abstract class BaseRepository<DbEntity> where DbEntity : class, ITable, new()
     {
-        DbContext DbContext { get; set; }
-        public BaseRepository(DbContext dbContext)
+        IDbContextFactory<AppDbContext> DbContextFactory { get; set; }
+        protected ITenantResolver TenantResolver { get; set; }
+        public BaseRepository(IDbContextFactory<AppDbContext> dbContextFactory,ITenantResolver tenantResolver)
         {
-            DbContext = dbContext;            
+            DbContextFactory = dbContextFactory;
+            TenantResolver = tenantResolver;
         }
         public bool LazyLoading { get; set; } = true;
         public bool RelationsEagerLoading { get; set; } = true;
@@ -209,8 +212,10 @@ namespace Repository
                     }
                     else
                         dbEntity = AddNew(db);
-                }
+                }                
                 editValues(dbEntity);
+                if (dbEntity.GetType().IsSubclassOf(typeof(Tenant)))
+                    (dbEntity as Tenant).TenantId = TenantResolver.GetCurrentTenantId();
                 OnBeforeSave(dbEntity, db);
                 db.SaveChanges();
                 OnAfterSave(dbEntity, db);
@@ -262,7 +267,7 @@ namespace Repository
             else
                 return null;
         }
-        public async Task<int> Save(DbEntity entity)
+        public virtual async Task<int> Save(DbEntity entity)
         {
             int dbEntityId = 0;
             try
@@ -370,8 +375,10 @@ namespace Repository
                 else
                 {
                     dbEntity = GetDbSetForSave(db).Where(p => p.Id == updatedEntity.Id).FirstOrDefault();
-                }
+                }                
                 Map(updatedEntity, dbEntity);
+                if (dbEntity.GetType().IsSubclassOf(typeof(Tenant)))
+                    (dbEntity as Tenant).TenantId = TenantResolver.GetCurrentTenantId();
                 OnBeforeSave(dbEntity, db);
                 db.SaveChanges();
                 OnAfterSave(dbEntity, db);
@@ -424,7 +431,7 @@ namespace Repository
         protected virtual void OnAfterSave(DbEntity dbEntity, DbContext db) { }
         async protected virtual Task<DbContext> GetDbContext()
         {
-            return DbContext;
+            return DbContextFactory.CreateDbContext();
         }
         protected int ExecuteSqlCommand(string command, int? timeout = null)
         {
