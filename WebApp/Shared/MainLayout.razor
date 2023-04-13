@@ -1,0 +1,50 @@
+﻿@*@inherits LayoutComponentBase
+
+<PageTitle>WebApp</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 auth">
+            <LoginDisplay />
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+*@
+
+@inherits LayoutComponentBase
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+ <MudLayout>
+        <MudAppBar>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            eWallet
+        </MudAppBar>
+        <MudDrawer @bind-Open="@_drawerOpen">
+            <NavMenu />
+        </MudDrawer>
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+        <MudAppBar Bottom="true" Fixed="true" Color="Color.Info" Elevation="1">
+            <LifeEventRegistration></LifeEventRegistration>
+        </MudAppBar>
+    </MudLayout>
+
+@code {
+    bool _drawerOpen = false;   
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
