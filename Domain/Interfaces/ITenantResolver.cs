@@ -9,5 +9,6 @@ namespace Domain
     public interface ITenantResolver
     {
         string GetCurrentTenantId();
+        void SetCurrentTenantId(string tenantId);
     }
 }

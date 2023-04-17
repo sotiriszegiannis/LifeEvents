@@ -1,0 +1,48 @@
+﻿@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@inject UsersRepository UsersRepository
+@inject ISnackbar Snackbar
+
+<MudGrid>
+    <MudItem xs="12" sm="12">
+        <MudPaper Class="pa-4">
+            <MudForm @ref="form" ReadOnly="false">
+                <MudTextField T="string" Label="Username" Required="true" RequiredError="User name is required!" @bind-Value="userRDTO.Name" ReadOnly="true" />
+                <MudTextField T="string" Label="Timezone" Required="true" RequiredError="Timezone is required" @bind-Value="userRDTO.TimeZone" />
+            </MudForm>
+        </MudPaper>
+        <MudPaper Class="pa-4 mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@OnSaveClick">Save</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="@(()=>form.Reset())" Class="mx-2">Reset</MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    public UserRDTO userRDTO { get; set; }
+    MudForm form;
+    [Parameter]
+    public Action OnSave { get; set; }
+    protected async override Task OnInitializedAsync()
+    {
+        userRDTO = await UsersRepository.Get();
+        if (userRDTO == null)
+        {
+            userRDTO = new UserRDTO();
+        }
+        await base.OnInitializedAsync();
+    }
+    private async Task OnSaveClick()
+    {
+        if (await UsersRepository.Update(userRDTO) > 0)
+        {
+            OnSave?.Invoke();
+        }
+        else
+        {
+            Snackbar.Add("An error occured!", Severity.Error);
+        }
+    }
+}
+
+}

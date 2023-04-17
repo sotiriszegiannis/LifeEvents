@@ -5,17 +5,19 @@ namespace WebApp
 {
     public class TenantResolver : ITenantResolver
     {
+        private string TenantId;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public TenantResolver(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
+            TenantId = _httpContextAccessor?.HttpContext.User.Identity.Name;
             Debug.WriteLine("*********************************TenantResolver instantiated through DI*****************");
         }
 
         public string GetCurrentTenantId()
         {
-            var tenantId = _httpContextAccessor?.HttpContext.User.Identity.Name;
+
             //if (claim is null)
             //    throw new UnauthorizedAccessException("Authentication failed");
 
@@ -23,7 +25,12 @@ namespace WebApp
             //if (tenant is null)
             //    throw new UnauthorizedAccessException($"Tenant '{claim.Value}' is not registered.");
 
-            return tenantId!;
+            return TenantId!;
+        }
+
+        public void SetCurrentTenantId(string tenantId)
+        {
+            TenantId = tenantId;
         }
     }
 }

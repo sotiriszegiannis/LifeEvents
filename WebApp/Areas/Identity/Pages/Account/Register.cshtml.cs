@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -32,6 +33,7 @@ namespace WebApp.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly UsersRepository _usersRepository;
+        private readonly ITenantResolver _tenantResolver;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -39,7 +41,8 @@ namespace WebApp.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            UsersRepository usersRepository)
+            UsersRepository usersRepository,
+            ITenantResolver tenantResolver)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -48,6 +51,7 @@ namespace WebApp.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _usersRepository = usersRepository;
+            _tenantResolver = tenantResolver;
         }
 
         /// <summary>
@@ -106,6 +110,7 @@ namespace WebApp.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
+            public string IanaTimeZone { get; set; }
         }
 
 
@@ -129,10 +134,12 @@ namespace WebApp.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    _tenantResolver.SetCurrentTenantId(user.Email);
                     await _usersRepository.Save(new Domain.User()
                     {
                         TenantId = user.Email,
                         Name = Input.Username,
+                        TimeZone = Input.IanaTimeZone
                     });
                     _logger.LogInformation("User created a new account with password.");
 

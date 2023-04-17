@@ -11,7 +11,8 @@ namespace Domain
         [TableColumnAttr]
         public int Id { get; set; }
         [TableColumnAttr]
-        public string Name { get; set; }        
-
+        public string Name { get; set; }
+        [TableColumnAttr]
+        public string TimeZone { get; set; }
     }
 }

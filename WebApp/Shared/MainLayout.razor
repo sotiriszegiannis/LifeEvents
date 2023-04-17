@@ -1,4 +1,9 @@
-﻿@*@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using System.Security.Claims
+@*@inherits LayoutComponentBase
 
 <PageTitle>WebApp</PageTitle>
 
@@ -25,22 +30,46 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
- <MudLayout>
-        <MudAppBar>
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />            
-        </MudAppBar>
-        <MudDrawer @bind-Open="@_drawerOpen">
-            <NavMenu />
-        </MudDrawer>
-        <MudMainContent>
-            @Body
-        </MudMainContent>        
-    </MudLayout>
+<MudLayout>
+    <MudAppBar>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => PagesDrawerToggle())" />
+        <MudSpacer />
+        @*<MudIconButton Icon="@Icons.Material.Outlined.AccountCircle" Color="Color.Inherit" />*@
+        <MudMenu AnchorOrigin="@Origin.BottomRight" TransformOrigin="@Origin.BottomRight" Style="width:fit-content">
+            <ActivatorContent>
+                <MudChip Icon="@Icons.Material.Outlined.AccountCircle" Style="Color:white" />
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem OnClick="@((e) => ProfileDrawerToggle())">Profile</MudMenuItem>
+                <MudMenuItem OnClick="@Signout">Sign Out</MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
+    <MudDrawer @bind-Open="@openProfileDrawer" Anchor="@Anchor.End" Elevation="1" Variant="@DrawerVariant.Temporary" Width="50%">
+        <UserProfileEditor OnSave="()=>ProfileDrawerToggle()"></UserProfileEditor>
+    </MudDrawer>
+    <MudDrawer @bind-Open="@openPagesDrawer">
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
 
 @code {
-    bool _drawerOpen = false;   
-    void DrawerToggle()
+    bool openPagesDrawer = false;
+    bool openProfileDrawer = false;
+    void PagesDrawerToggle()
     {
-        _drawerOpen = !_drawerOpen;
+        openPagesDrawer = !openPagesDrawer;
+    }
+    void ProfileDrawerToggle()
+    {
+        openProfileDrawer = !openProfileDrawer;
+        StateHasChanged();
+    }
+    void Signout()
+    {
+        NavigationManager.NavigateTo("Identity/Account/Logout", true);
     }
 }

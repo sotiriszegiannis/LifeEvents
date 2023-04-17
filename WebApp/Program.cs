@@ -36,7 +36,7 @@ public class Program
         builder.Services.AddAutoMapper(p => p.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
         builder.Services.AddScoped<UsersRepository>();
         builder.Services.AddScoped<LifeEventsRepository>();
-
+        builder.Services.AddScoped<TagsRepository>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
