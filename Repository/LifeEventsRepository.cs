@@ -29,15 +29,33 @@ namespace Repository
                 lifeEvent.Location = lifeEventDTO.Location;
                 lifeEvent.DateCreated = DateTime.UtcNow;
                 lifeEvent.DateUpdated = DateTime.UtcNow;                
-                //lifeEvent.Tags = lifeEventDTO.Tags;
+                lifeEvent.Tags = lifeEventDTO.Tags.Select(p=>new Tag()
+                {
+                    Id=p.Id,
+                    Name=p.Name,
+                }).ToList();
                 return await base.Save(lifeEvent);
             }
             return 0;
         }
         public override void Map(LifeEvent fromEntity, LifeEvent toEntity)
         {
-            toEntity.User = (GetDbContext().Result as AppDbContext).Users.FirstOrDefault(x => x.TenantId == TenantResolver.GetCurrentTenantId());
+            toEntity.User = (GetDbContext().Result as AppDbContext)?.Users.FirstOrDefault(x => x.TenantId == TenantResolver.GetCurrentTenantId())!;
             base.Map(fromEntity, toEntity);
+            fromEntity.Tags?.Where(p => p.Id == 0).ToList().ForEach(p =>
+            {
+                if(toEntity.Tags==null)
+                    toEntity.Tags=new List<Tag>();
+                toEntity.Tags.Add(new Tag()
+                {
+                    Name = p.Name,
+                    TenantId = TenantResolver.GetCurrentTenantId()
+                });
+            });
+            toEntity.Tags?.Where(p => fromEntity.Tags?.First(x => x.Id == p.Id) == null).ToList().ForEach(p =>
+            {
+                toEntity.Tags.Remove(p);
+            });
         }
     }
 }

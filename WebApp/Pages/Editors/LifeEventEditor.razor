@@ -7,6 +7,7 @@
         <MudPaper Class="pa-4">
             <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
                 <MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Name" />
+                <Tags @bind-SelectedTags="Tags"></Tags>
                 <MudTextField T="string" Label="Description" @bind-Value="LifeEventDTO.Description" />
                 <MudNumericField HideSpinButtons="true" @bind-Value="LifeEventDTO.DurationInMinutes" Label="Duration" />
                 <MudDatePicker Label="From" @bind-Date="from" />
@@ -23,6 +24,7 @@
 
 
 @code {
+    public List<ListItem<int,object>> Tags { get; set; }
     DateTime? from = DateTime.Today;
     DateTime? to = DateTime.Today;
     bool success;
@@ -37,6 +39,12 @@
         {
             LifeEventDTO.From = from ?? default(DateTime);
             LifeEventDTO.To = to ?? default(DateTime);
+            LifeEventDTO.Tags = Tags?.Select(p => new TagRDTO()
+                {
+                    Id = p.Key,
+                    Name = p.Value
+                })
+            .ToList()!;
             var id = await LifeEventsRepository.Save(LifeEventDTO);
             if (id > 0)
                 Snackbar.Add("Saved!", Severity.Success);

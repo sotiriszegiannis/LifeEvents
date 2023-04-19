@@ -1,0 +1,68 @@
+﻿<MudChipSet AllClosable="true" MultiSelection="true" Filter="true" OnClose="Closed">
+    @foreach (var onScreenTag in OnScreenTags)
+    {
+        <MudChip Text="@onScreenTag.Text" @ref="onScreenTag.MudChip" OnClick="UpdateSelectedTags"></MudChip>
+    }
+    <input type="text" class="form-control" @bind="NewTagValue" @bind:event="oninput" @onkeydown="@OnKeyDown" placeholder="new tag" />
+</MudChipSet>
+@code
+{
+    [Parameter]
+    public List<ListItem<int, object>> SelectedTags { get; set; }
+    [Parameter]
+    public EventCallback<List<ListItem<int, object>>> SelectedTagsChanged { get; set; }
+    string NewTagValue { get; set; }    
+    List<OnScreenTag> OnScreenTags = new List<OnScreenTag>();
+    public void Closed(MudChip chip)
+    {
+        OnScreenTags = OnScreenTags.Where(p => p.Text != chip.Text).ToList();
+        UpdateSelectedTags();
+    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {        
+        if(OnScreenTags!=null && OnScreenTags.Count>0){
+            OnScreenTags.ForEach(p =>
+            {
+                if (p.New && !p.NewHasBeenMarkedAsSelected && !p.MudChip.IsSelected)
+                {
+                    p.MudChip.IsSelected = true;
+                    p.NewHasBeenMarkedAsSelected = true;
+                }
+            });        
+            UpdateSelectedTags();
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+    public void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            OnScreenTags.Add(new OnScreenTag()
+                {
+                    New = true,
+                    Text = NewTagValue
+                });
+            NewTagValue = "";
+        }
+    }
+    private void UpdateSelectedTags()
+    {
+        this.SelectedTags=OnScreenTags?
+                            .Where(p => p.MudChip.IsSelected)
+                            .Select(p => new ListItem<int, object>()
+                                {
+                                    Key = p.Id,
+                                    Value = p.Text
+                                })
+                            .ToList()!;
+        SelectedTagsChanged.InvokeAsync(SelectedTags);
+    }
+    class OnScreenTag
+    {
+        public string Text { get; set; }
+        public int Id { get; set; }        
+        public bool NewHasBeenMarkedAsSelected { get; set; }
+        public bool New { get; set; }
+        public MudChip MudChip { get; set; }
+    }
+}
