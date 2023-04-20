@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain;
 using Repository;
+using WebApp.DTOs.RepositoryDTOs;
 
 namespace WebApp
 {

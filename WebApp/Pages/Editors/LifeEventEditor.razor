@@ -1,7 +1,7 @@
-﻿@using System.Text.RegularExpressions
+﻿@inherits EditorBase
+@using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @inject LifeEventsRepository LifeEventsRepository
-@inject ISnackbar Snackbar
 <MudGrid>
     <MudItem xs="12" sm="12">
         <MudPaper Class="pa-4">
@@ -14,11 +14,7 @@
                 <MudDatePicker Label="To" @bind-Date="to" />
                 <MudTextField T="string" Label="Location" @bind-Value="LifeEventDTO.Location" />
             </MudForm>
-        </MudPaper>
-        <MudPaper Class="pa-4 mt-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="OnSaveClick">Save</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="@(()=>form.Reset())" Class="mx-2">Cancle</MudButton>
-        </MudPaper>
+        </MudPaper>        
     </MudItem>
 </MudGrid>
 
@@ -29,11 +25,11 @@
     DateTime? to = DateTime.Today;
     bool success;
     string[] errors = { };
-    MudTextField<string> pwField1;
     MudForm form;
-    LifeEventRDTO LifeEventDTO = new Repository.LifeEventRDTO();
-    private async Task OnSaveClick()
+    LifeEventRDTO LifeEventDTO = new Repository.LifeEventRDTO();   
+    public override async Task<EditorSaveResult> Save()
     {
+        var result=new EditorSaveResult();
         await form.Validate();
         if (form.IsValid)
         {
@@ -46,10 +42,10 @@
                 })
             .ToList()!;
             var id = await LifeEventsRepository.Save(LifeEventDTO);
-            if (id > 0)
-                Snackbar.Add("Saved!", Severity.Success);
-            else
-                Snackbar.Add("An error occured!", Severity.Error);
+            result.EditorSaveResultType=id > 0 ? EditorSaveResultTypeEnum.Saved : EditorSaveResultTypeEnum.SaveError;
         }
+        else
+            result.EditorSaveResultType=EditorSaveResultTypeEnum.ValidationErrors;
+            return result;
     }
 }

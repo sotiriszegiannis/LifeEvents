@@ -1,31 +1,10 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @using System.Security.Claims
-@*@inherits LayoutComponentBase
 
-<PageTitle>WebApp</PageTitle>
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4 auth">
-            <LoginDisplay />
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-*@
-
-@inherits LayoutComponentBase
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -34,7 +13,7 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => PagesDrawerToggle())" />
         <MudSpacer />
-        @*<MudIconButton Icon="@Icons.Material.Outlined.AccountCircle" Color="Color.Inherit" />*@
+        <MudIconButton Icon="@Icons.Material.Outlined.AddCircle" Color="Color.Inherit" Style="Color:white" OnClick="()=>ShowLifeEventEditor()"/>
         <MudMenu AnchorOrigin="@Origin.BottomRight" TransformOrigin="@Origin.BottomRight" Style="width:fit-content">
             <ActivatorContent>
                 <MudChip Icon="@Icons.Material.Outlined.AccountCircle" Style="Color:white" />
@@ -51,6 +30,7 @@
     <MudDrawer @bind-Open="@openPagesDrawer">
         <NavMenu />
     </MudDrawer>
+    <EditorDialog @ref="EditorDialog"></EditorDialog>
     <MudMainContent>
         @Body
     </MudMainContent>
@@ -59,6 +39,12 @@
 @code {
     bool openPagesDrawer = false;
     bool openProfileDrawer = false;
+    EditorDialog EditorDialog { get; set; }
+    void ShowLifeEventEditor()
+    {        
+        EditorDialog.EditorType = typeof(LifeEventEditor);
+        EditorDialog.Show();
+    }    
     void PagesDrawerToggle()
     {
         openPagesDrawer = !openPagesDrawer;

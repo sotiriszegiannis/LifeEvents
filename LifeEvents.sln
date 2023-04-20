@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository", "Repository\Repository.csproj", "{2AD8C3CE-8E9B-462F-9EBA-653BFAB4AD5E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Playground\Playground.csproj", "{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{2AD8C3CE-8E9B-462F-9EBA-653BFAB4AD5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2AD8C3CE-8E9B-462F-9EBA-653BFAB4AD5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2AD8C3CE-8E9B-462F-9EBA-653BFAB4AD5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

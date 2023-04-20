@@ -1,9 +1,13 @@
-﻿<MudChipSet AllClosable="true" MultiSelection="true" Filter="true" OnClose="Closed">
+﻿@inject TagsRepository TagsRepository
+<MudChipSet AllClosable="true" MultiSelection="true" Filter="true" OnClose="OnClosed">
     @foreach (var onScreenTag in OnScreenTags)
     {
         <MudChip Text="@onScreenTag.Text" @ref="onScreenTag.MudChip" OnClick="UpdateSelectedTags"></MudChip>
     }
-    <input type="text" class="form-control" @bind="NewTagValue" @bind:event="oninput" @onkeydown="@OnKeyDown" placeholder="new tag" />
+    <MudAutocomplete T="string" Label="tag" @bind-Value="NewTagValue" SearchFunc="@OnTagSearch"
+                     ResetValueOnEmptyText="true"
+                     CoerceText="true" CoerceValue="true" @onkeydown="@OnKeyDown" @ref="MudAutocomplete" OnAdornmentClick="AddTag"/>
+    @*<input type="text" class="form-control" @bind="NewTagValue" @bind:event="oninput" @onkeydown="@OnKeyDown" placeholder="new tag" />*@
 </MudChipSet>
 @code
 {
@@ -11,16 +15,32 @@
     public List<ListItem<int, object>> SelectedTags { get; set; }
     [Parameter]
     public EventCallback<List<ListItem<int, object>>> SelectedTagsChanged { get; set; }
-    string NewTagValue { get; set; }    
+    List<Tag> TagsFromTheDB { get; set; } = new List<Tag>();
+    string NewTagValue { get; set; }
+    MudAutocomplete<string> MudAutocomplete { get; set; }
     List<OnScreenTag> OnScreenTags = new List<OnScreenTag>();
-    public void Closed(MudChip chip)
+    public void OnClosed(MudChip chip)
     {
         OnScreenTags = OnScreenTags.Where(p => p.Text != chip.Text).ToList();
         UpdateSelectedTags();
     }
+    private async Task<IEnumerable<string>> OnTagSearch(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return new List<string>();
+        else
+            return TagsFromTheDB.Where(p => p.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p.Name);
+    }
+    protected async override Task OnInitializedAsync()
+    {
+        TagsFromTheDB = await TagsRepository.GetAll();
+        await base.OnInitializedAsync();
+    }
+
     protected override Task OnAfterRenderAsync(bool firstRender)
-    {        
-        if(OnScreenTags!=null && OnScreenTags.Count>0){
+    {
+        if (OnScreenTags != null && OnScreenTags.Count > 0)
+        {
             OnScreenTags.ForEach(p =>
             {
                 if (p.New && !p.NewHasBeenMarkedAsSelected && !p.MudChip.IsSelected)
@@ -28,26 +48,37 @@
                     p.MudChip.IsSelected = true;
                     p.NewHasBeenMarkedAsSelected = true;
                 }
-            });        
+            });
             UpdateSelectedTags();
         }
         return base.OnAfterRenderAsync(firstRender);
     }
-    public void OnKeyDown(KeyboardEventArgs e)
+    void OnAdormentClick(MouseEventArgs e)
+    {
+        AddTag();
+    }
+    void OnKeyDown(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            OnScreenTags.Add(new OnScreenTag()
-                {
-                    New = true,
-                    Text = NewTagValue
-                });
-            NewTagValue = "";
+            AddTag();
         }
+    }
+    void AddTag()
+    {
+        OnScreenTags.Add(new OnScreenTag()
+            {
+                New = true,
+                Text = NewTagValue
+            });
+        MudAutocomplete.Value = "";
+        MudAutocomplete.Text = "";
+        MudAutocomplete.Reset();
+        NewTagValue = "";
     }
     private void UpdateSelectedTags()
     {
-        this.SelectedTags=OnScreenTags?
+        this.SelectedTags = OnScreenTags?
                             .Where(p => p.MudChip.IsSelected)
                             .Select(p => new ListItem<int, object>()
                                 {
@@ -60,7 +91,7 @@
     class OnScreenTag
     {
         public string Text { get; set; }
-        public int Id { get; set; }        
+        public int Id { get; set; }
         public bool NewHasBeenMarkedAsSelected { get; set; }
         public bool New { get; set; }
         public MudChip MudChip { get; set; }

@@ -8,4 +8,25 @@ namespace Playground
             InitializeComponent();
         }
     }
+
+    public class Parent
+    {
+        public IChild AChild { get; set; }
+        public void Save()
+        {
+            AChild.Save();
+        }
+    }
+    public interface IChild
+    {
+        bool Save();
+    }
+    public class Child:IChild
+    {
+        public bool Save()
+        {
+            Console.WriteLine("saved");
+            return true;
+        }
+    }
 }

@@ -1,0 +1,48 @@
+﻿@inject ISnackbar Snackbar
+<MudDialog DisableSidePadding="true" @bind-IsVisible="DialogVisible" Options="DialogOptions">
+    <DialogContent>
+        <DynamicComponent Type="EditorType" @ref="EditorComponent" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="Save">Save</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="Close" Class="mx-2">Cancle</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [Parameter]
+    public Type? EditorType { get; set; }
+    DynamicComponent? EditorComponent { get; set; }
+    bool DialogVisible { get; set; } = false;
+    DialogOptions DialogOptions = new DialogOptions
+        {
+            CloseButton = true,
+            DisableBackdropClick = true,
+            MaxWidth = MaxWidth.ExtraExtraLarge,
+            FullWidth = true,
+            Position = DialogPosition.TopCenter,
+        };
+    public void Show()
+    {
+        DialogVisible = true;
+        StateHasChanged();
+    }
+    public void Close()
+    {
+        DialogVisible = false;
+        StateHasChanged();
+    }
+    public async Task Save()
+    {
+        var result = await (EditorComponent?.Instance as EditorBase)?.Save()!;
+        switch (result.EditorSaveResultType)
+        {
+            case EditorSaveResultTypeEnum.Saved:
+                Snackbar.Add("Saved!", Severity.Success);
+                Close();
+                break;
+            case EditorSaveResultTypeEnum.SaveError:
+                Snackbar.Add("An error occured!", Severity.Error);
+                break;
+        }
+    }
+}

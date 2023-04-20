@@ -29,7 +29,7 @@ namespace Repository
                 lifeEvent.Location = lifeEventDTO.Location;
                 lifeEvent.DateCreated = DateTime.UtcNow;
                 lifeEvent.DateUpdated = DateTime.UtcNow;                
-                lifeEvent.Tags = lifeEventDTO.Tags.Select(p=>new Tag()
+                lifeEvent.Tags = lifeEventDTO.Tags?.Select(p=>new Tag()
                 {
                     Id=p.Id,
                     Name=p.Name,

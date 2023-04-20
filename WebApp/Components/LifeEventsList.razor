@@ -1,0 +1,15 @@
+﻿@inject LifeEventsRepository LifeEventsRepository
+<ul class="list-group">
+    @foreach (var lifeEvent in lifeEvents)
+    {
+        <li class="list-group-item">@lifeEvent.Name for @lifeEvent.DurationInMinutes</li>
+    }
+</ul>
+
+@code {
+    List<LifeEvent> lifeEvents = new List<LifeEvent>();
+    protected override async Task OnInitializedAsync()
+    {
+        lifeEvents=await LifeEventsRepository.GetAll();
+    }
+}
