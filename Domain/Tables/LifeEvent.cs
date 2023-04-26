@@ -18,7 +18,7 @@ namespace Domain
             {
                 if(From==default || To== default)
                     return 0;
-                return (To - From).Minutes;
+                return (int)(To - From).TotalMinutes;
             }
         }
         [TableColumnAttr]

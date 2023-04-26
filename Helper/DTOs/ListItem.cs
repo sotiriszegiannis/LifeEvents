@@ -1,4 +1,4 @@
-﻿namespace Domain
+﻿namespace Helper  
 {
     public class ListItem<T,K>
     {

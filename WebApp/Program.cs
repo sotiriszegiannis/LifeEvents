@@ -9,7 +9,7 @@ using WebApp.Data;
 using Domain;
 using MudBlazor.Services;
 using Repository;
-using AutoMapper;
+using CrossComponentCommunication;
 
 namespace WebApp;
 
@@ -34,6 +34,7 @@ public class Program
         builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
         builder.Services.AddScoped<ITenantResolver, TenantResolver>();
         builder.Services.AddAutoMapper(p => p.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
+        builder.Services.AddSingleton(typeof(CrossComponentCommunication.CrossComponentCommunication<object>));
         builder.Services.AddScoped<UsersRepository>();
         builder.Services.AddScoped<LifeEventsRepository>();
         builder.Services.AddScoped<TagsRepository>();

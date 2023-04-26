@@ -11,6 +11,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository", "Repository\Re
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Playground\Playground.csproj", "{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helper", "Helper\Helper.csproj", "{8799B637-8B49-49BA-8C0D-3A5AD618ABC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossComponentCommunication", "CrossComponentCommunication\CrossComponentCommunication.csproj", "{3726152A-1C74-432C-9B37-D2F299CCA62A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCABC9FA-54EF-4286-83A1-4A7CEF01E6A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8799B637-8B49-49BA-8C0D-3A5AD618ABC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8799B637-8B49-49BA-8C0D-3A5AD618ABC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8799B637-8B49-49BA-8C0D-3A5AD618ABC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8799B637-8B49-49BA-8C0D-3A5AD618ABC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3726152A-1C74-432C-9B37-D2F299CCA62A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3726152A-1C74-432C-9B37-D2F299CCA62A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3726152A-1C74-432C-9B37-D2F299CCA62A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3726152A-1C74-432C-9B37-D2F299CCA62A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

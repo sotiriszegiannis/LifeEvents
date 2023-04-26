@@ -1,0 +1,158 @@
+﻿@inject UsersRepository UsersRepository
+<div>
+    <div class="row">
+        <MudForm>
+            <MudRadioGroup @bind-SelectedOption="@SelectedOption">
+                <MudRadio Option="@("Duration")" Color="Color.Primary">Duration</MudRadio>
+                <MudRadio Option="@("StartAt")" Color="Color.Secondary">Start at</MudRadio>
+                <MudRadio Option="@("Range")">Range</MudRadio>
+            </MudRadioGroup>
+        </MudForm>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            @if (SelectedOption == "Duration")
+            {
+                <DurationPicker @bind-DurationInMinutes="DurationInMinutes" @ref="DurationPicker" />
+            }
+            else if (SelectedOption == "StartAt")
+            {
+                <MudTimePicker @ref="MudTimePicker" @bind-Time="StartTime" />
+            }
+            else if (SelectedOption == "Range")
+            {
+                <MudTextField T="DateTime?" Format="s" Label="From" InputType="InputType.DateTimeLocal" @bind-Date="From" />
+                <MudTextField T="DateTime?" Format="s" Label="To" InputType="InputType.DateTimeLocal" @bind-Date="To" />
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <MudChipSet Filter="true" SelectedChipChanged="SelectedFixedDurationChanged" @ref="FixedDurationsSet">
+                @foreach (var item in FixedDurations)
+                {
+                    <MudChip Text="grey" Value="item.minutes">@item.label</MudChip>
+                }
+            </MudChipSet>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public EventDateRange DateRange { get; set; }
+    [Parameter]
+    public EventCallback<EventDateRange> DateRangeChanged { get; set; }
+    DurationPicker DurationPicker { get; set; }
+    UserRDTO User { get; set; }
+    int DurationInMinutes
+    {
+        get
+        {
+            if (GetEventDateRange().From.HasValue && GetEventDateRange().To.HasValue)
+            {
+                return (int)GetEventDateRange().To.Value.Subtract(GetEventDateRange().From.Value).TotalMinutes;
+            }
+            else
+                return 0;
+        }
+        set
+        {
+            GetEventDateRange().To = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+            GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-value);
+        }
+    }
+
+    TimeSpan? _StartTime = new TimeSpan(00, 00, 00);
+    TimeSpan? StartTime
+    {
+        get
+        {
+            return _StartTime;
+        }
+        set
+        {
+            _StartTime = value;
+            var nowAtUserTimeZone = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+            if (nowAtUserTimeZone.TimeOfDay > _StartTime!.Value)
+                GetEventDateRange().From=nowAtUserTimeZone.Date.Add(_StartTime.Value);
+            else
+                GetEventDateRange().From=nowAtUserTimeZone.Date.AddDays(-1).Add(_StartTime.Value);            
+            GetEventDateRange().To = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+            TriggerDateRangeChangedEvent();
+        }
+    }
+    DateTime? From
+    {
+        get
+        {
+            return GetEventDateRange().From;
+        }
+        set
+        {
+            GetEventDateRange().From = value;
+            TriggerDateRangeChangedEvent();
+        }
+    }
+    DateTime? To
+    {
+        get
+        {
+            return GetEventDateRange().To;
+        }
+        set
+        {
+            GetEventDateRange().To = value;
+            TriggerDateRangeChangedEvent();
+        }
+    }
+    MudTimePicker MudTimePicker { get; set; }
+    MudChipSet FixedDurationsSet { get; set; }
+    MudChip SelectedFixedDuration { get; set; }
+    void SelectedFixedDurationChanged(MudChip mudChip)
+    {
+        GetEventDateRange().To = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+        GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-(int)mudChip.Value);
+        DurationPicker.SetDuration((int)mudChip.Value);
+        TriggerDateRangeChangedEvent();
+    }
+    List<(int minutes, string label)> FixedDurations = new List<(int minutes, string label)>() {
+        (5,"5'"), (30,"30'"), (60,"1 hour"), (240,"4 hours"), (420,"7 hours") };
+    protected async override Task OnInitializedAsync()
+    {
+        User = await UsersRepository.Get();
+        await base.OnInitializedAsync();
+    }
+    void TriggerDateRangeChangedEvent()
+    {
+        DateRangeChanged.InvokeAsync(GetEventDateRange());
+    }
+    string _SelectedOption { get; set; } = "Duration";
+    string SelectedOption
+    {
+        get
+        {
+            return _SelectedOption;
+        }
+        set
+        {
+            SelectedFixedDuration = null;
+            FixedDurationsSet.SelectedChip = null;
+            _SelectedOption = value;
+            switch (_SelectedOption)
+            {
+                case "StartAt":
+                    MudTimePicker?.Open();
+                    break;
+            }
+        }
+    }
+    EventDateRange GetEventDateRange()
+    {
+        if (DateRange == null)
+            DateRange = new EventDateRange();
+        return DateRange;
+    }
+
+}

@@ -1,4 +1,5 @@
 ﻿@inject LifeEventsRepository LifeEventsRepository
+@inject CrossComponentCommunication.CrossComponentCommunication<int> CrossComponentCommunication
 <ul class="list-group">
     @foreach (var lifeEvent in lifeEvents)
     {
@@ -11,5 +12,10 @@
     protected override async Task OnInitializedAsync()
     {
         lifeEvents=await LifeEventsRepository.GetAll();
+        CrossComponentCommunication.ListenerTo(BroadcastTypeEnum.NewLifeEvent, OnNewLifeEvent);
+    }
+    void OnNewLifeEvent(int recordId)
+    {
+        
     }
 }

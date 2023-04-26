@@ -13,7 +13,7 @@ namespace Domain
         public DbSet<Tag> Tags { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options, ITenantResolver tenantResolver) : base(options)
         {
-            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             ChangeTracker.LazyLoadingEnabled = false;
             TenantResolver = tenantResolver;
         }

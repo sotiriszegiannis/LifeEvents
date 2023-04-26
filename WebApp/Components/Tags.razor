@@ -4,10 +4,7 @@
     {
         <MudChip Text="@onScreenTag.Text" @ref="onScreenTag.MudChip" OnClick="UpdateSelectedTags"></MudChip>
     }
-    <MudAutocomplete T="string" Label="tag" @bind-Value="NewTagValue" SearchFunc="@OnTagSearch"
-                     ResetValueOnEmptyText="true"
-                     CoerceText="true" CoerceValue="true" @onkeydown="@OnKeyDown" @ref="MudAutocomplete" OnAdornmentClick="AddTag"/>
-    @*<input type="text" class="form-control" @bind="NewTagValue" @bind:event="oninput" @onkeydown="@OnKeyDown" placeholder="new tag" />*@
+    <MyAutocomplete Items="ItemsForAutoComplete" TextChanged="@AutoCompleteTextChanged" Label="Tag"></MyAutocomplete>    
 </MudChipSet>
 @code
 {
@@ -16,20 +13,26 @@
     [Parameter]
     public EventCallback<List<ListItem<int, object>>> SelectedTagsChanged { get; set; }
     List<Tag> TagsFromTheDB { get; set; } = new List<Tag>();
-    string NewTagValue { get; set; }
-    MudAutocomplete<string> MudAutocomplete { get; set; }
+    List<string> ItemsForAutoComplete
+    {
+        get
+        {
+            return TagsFromTheDB
+            .Where(p => !OnScreenTags.Any(x => x.Text == p.Name))
+            .Select(p => p.Name)
+            .ToList();
+        }
+    }
+    //MudAutocomplete<string> MudAutocomplete { get; set; }
     List<OnScreenTag> OnScreenTags = new List<OnScreenTag>();
+    void AutoCompleteTextChanged(string value)
+    {
+        AddTag(value);
+    }
     public void OnClosed(MudChip chip)
     {
         OnScreenTags = OnScreenTags.Where(p => p.Text != chip.Text).ToList();
         UpdateSelectedTags();
-    }
-    private async Task<IEnumerable<string>> OnTagSearch(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return new List<string>();
-        else
-            return TagsFromTheDB.Where(p => p.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p.Name);
     }
     protected async override Task OnInitializedAsync()
     {
@@ -43,43 +46,30 @@
         {
             OnScreenTags.ForEach(p =>
             {
-                if (p.New && !p.NewHasBeenMarkedAsSelected && !p.MudChip.IsSelected)
-                {
-                    p.MudChip.IsSelected = true;
-                    p.NewHasBeenMarkedAsSelected = true;
-                }
+                if (p.MudChip != null)
+                    if (p.New && !p.NewHasBeenMarkedAsSelected && !p.MudChip.IsSelected)
+                    {
+                        p.MudChip.IsSelected = true;
+                        p.NewHasBeenMarkedAsSelected = true;
+                    }
             });
             UpdateSelectedTags();
         }
         return base.OnAfterRenderAsync(firstRender);
     }
-    void OnAdormentClick(MouseEventArgs e)
-    {
-        AddTag();
-    }
-    void OnKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter" || e.Code == "NumpadEnter")
-        {
-            AddTag();
-        }
-    }
-    void AddTag()
+    void AddTag(string newTagValue)
     {
         OnScreenTags.Add(new OnScreenTag()
             {
                 New = true,
-                Text = NewTagValue
+                Text = newTagValue
             });
-        MudAutocomplete.Value = "";
-        MudAutocomplete.Text = "";
-        MudAutocomplete.Reset();
-        NewTagValue = "";
+            StateHasChanged();
     }
     private void UpdateSelectedTags()
     {
         this.SelectedTags = OnScreenTags?
-                            .Where(p => p.MudChip.IsSelected)
+                            .Where(p => p.MudChip!=null && p.MudChip.IsSelected)
                             .Select(p => new ListItem<int, object>()
                                 {
                                     Key = p.Id,
@@ -87,6 +77,7 @@
                                 })
                             .ToList()!;
         SelectedTagsChanged.InvokeAsync(SelectedTags);
+        
     }
     class OnScreenTag
     {

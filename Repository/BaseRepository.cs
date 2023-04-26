@@ -376,7 +376,7 @@ namespace Repository
                 {
                     dbEntity = GetDbSetForSave(db).Where(p => p.Id == updatedEntity.Id).FirstOrDefault();
                 }                
-                Map(updatedEntity, dbEntity);
+                Map(updatedEntity, dbEntity, db);
                 if (dbEntity.GetType().IsSubclassOf(typeof(Tenant)))
                     (dbEntity as Tenant).TenantId = TenantResolver.GetCurrentTenantId();
                 OnBeforeSave(dbEntity, db);
@@ -391,7 +391,7 @@ namespace Repository
             db.Set<DbEntity>().Add(newEntity);
             return newEntity;
         }
-        public virtual void Map(DbEntity fromEntity, DbEntity toEntity)
+        public virtual void Map(DbEntity fromEntity, DbEntity toEntity,DbContext dbContext)
         {
             PropertyInfo[] props = fromEntity.GetType().GetProperties();
             foreach (PropertyInfo oneProperty in props)

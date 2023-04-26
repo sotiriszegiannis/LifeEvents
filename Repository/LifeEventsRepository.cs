@@ -22,40 +22,50 @@ namespace Repository
             if (lifeEvent.Id == 0)
             {
                 lifeEvent = new LifeEvent();
-                lifeEvent.From = lifeEventDTO.From==default(DateTime)?DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes):lifeEventDTO.From;
-                lifeEvent.To = lifeEventDTO.To==default(DateTime)?lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes):lifeEventDTO.From;
+                lifeEvent.From = !lifeEventDTO.From.HasValue ? DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes) : lifeEventDTO.From.Value;
+                lifeEvent.To = !lifeEventDTO.To.HasValue ? lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes) : lifeEventDTO.To.Value;
                 lifeEvent.Name = lifeEventDTO.Name;
                 lifeEvent.Description = lifeEventDTO.Description;
                 lifeEvent.Location = lifeEventDTO.Location;
                 lifeEvent.DateCreated = DateTime.UtcNow;
-                lifeEvent.DateUpdated = DateTime.UtcNow;                
-                lifeEvent.Tags = lifeEventDTO.Tags?.Select(p=>new Tag()
+                lifeEvent.DateUpdated = DateTime.UtcNow;
+                lifeEvent.Tags = lifeEventDTO.Tags?.Select(p => new Tag()
                 {
-                    Id=p.Id,
-                    Name=p.Name,
+                    Id = p.Id,
+                    Name = p.Name,
                 }).ToList();
                 return await base.Save(lifeEvent);
             }
             return 0;
         }
-        public override void Map(LifeEvent fromEntity, LifeEvent toEntity)
+        public override void Map(LifeEvent fromEntity, LifeEvent toEntity, DbContext dbContext)
         {
-            toEntity.User = (GetDbContext().Result as AppDbContext)?.Users.FirstOrDefault(x => x.TenantId == TenantResolver.GetCurrentTenantId())!;
-            base.Map(fromEntity, toEntity);
-            fromEntity.Tags?.Where(p => p.Id == 0).ToList().ForEach(p =>
+            List<Tag> dbTags = null;
+            toEntity.User = (dbContext as AppDbContext)?.Users.FirstOrDefault()!;            
+            if (fromEntity.Tags == null)
+                fromEntity.Tags = new List<Tag>();
+            else
             {
-                if(toEntity.Tags==null)
-                    toEntity.Tags=new List<Tag>();
-                toEntity.Tags.Add(new Tag()
-                {
-                    Name = p.Name,
-                    TenantId = TenantResolver.GetCurrentTenantId()
-                });
+                dbTags = (dbContext as AppDbContext)?.Tags.ToList();
+            }            
+            toEntity.Tags = dbTags?.Where(p => fromEntity.Tags.Any(x => x.Name == p.Name)).ToList();
+            if (toEntity.Tags == null)
+                toEntity.Tags = new List<Tag>();
+            fromEntity.Tags?.ToList().ForEach(p =>
+            {               
+                var existingTag = dbTags.FirstOrDefault(x => x.Name == p.Name);
+                if (existingTag == null)
+                    toEntity.Tags.Add(new Tag()
+                    {
+                        Name = p.Name,
+                        TenantId = TenantResolver.GetCurrentTenantId()
+                    });
             });
-            toEntity.Tags?.Where(p => fromEntity.Tags?.First(x => x.Id == p.Id) == null).ToList().ForEach(p =>
+            toEntity.Tags?.Where(p => fromEntity.Tags?.First(x => x.Name == p.Name) == null).ToList().ForEach(p =>
             {
                 toEntity.Tags.Remove(p);
             });
-        }
+            base.Map(fromEntity, toEntity, dbContext);
+        }        
     }
 }

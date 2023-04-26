@@ -2,6 +2,7 @@
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @inject LifeEventsRepository LifeEventsRepository
+@inject CrossComponentCommunication.CrossComponentCommunication<int> CrossComponentCommunication
 <MudGrid>
     <MudItem xs="12" sm="12">
         <MudPaper Class="pa-4">
@@ -9,9 +10,7 @@
                 <MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Name" />
                 <Tags @bind-SelectedTags="Tags"></Tags>
                 <MudTextField T="string" Label="Description" @bind-Value="LifeEventDTO.Description" />
-                <MudNumericField HideSpinButtons="true" @bind-Value="LifeEventDTO.DurationInMinutes" Label="Duration" />
-                <MudDatePicker Label="From" @bind-Date="from" />
-                <MudDatePicker Label="To" @bind-Date="to" />
+                <Duration DateRange="DateRange"></Duration>                                
                 <MudTextField T="string" Label="Location" @bind-Value="LifeEventDTO.Location" />
             </MudForm>
         </MudPaper>        
@@ -20,21 +19,20 @@
 
 
 @code {
-    public List<ListItem<int,object>> Tags { get; set; }
-    DateTime? from = DateTime.Today;
-    DateTime? to = DateTime.Today;
+    List<ListItem<int,object>> Tags { get; set; }
+    EventDateRange DateRange { get; set; } = new EventDateRange();
     bool success;
     string[] errors = { };
     MudForm form;
-    LifeEventRDTO LifeEventDTO = new Repository.LifeEventRDTO();   
-    public override async Task<EditorSaveResult> Save()
+    LifeEventRDTO LifeEventDTO = new Repository.LifeEventRDTO();       
+    public override async Task<Subscriber> Save()
     {
-        var result=new EditorSaveResult();
-        await form.Validate();
+        var result=new Subscriber();
+        await form.Validate();        
         if (form.IsValid)
         {
-            LifeEventDTO.From = from ?? default(DateTime);
-            LifeEventDTO.To = to ?? default(DateTime);
+            LifeEventDTO.From = DateRange?.From;
+            LifeEventDTO.To = DateRange?.To;
             LifeEventDTO.Tags = Tags?.Select(p => new TagRDTO()
                 {
                     Id = p.Key,
@@ -42,7 +40,12 @@
                 })
             .ToList()!;
             var id = await LifeEventsRepository.Save(LifeEventDTO);
-            result.EditorSaveResultType=id > 0 ? EditorSaveResultTypeEnum.Saved : EditorSaveResultTypeEnum.SaveError;
+            if(id > 0)
+            {
+                result.EditorSaveResultType=EditorSaveResultTypeEnum.Saved;
+                CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent,id);
+            } 
+            result.EditorSaveResultType=EditorSaveResultTypeEnum.SaveError;
         }
         else
             result.EditorSaveResultType=EditorSaveResultTypeEnum.ValidationErrors;

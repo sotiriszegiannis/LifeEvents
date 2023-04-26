@@ -12,6 +12,7 @@
     <link href="manifest.json" rel="manifest" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
+    <link href="css/pickerjs/picker.min.css" rel="stylesheet" />
     <link href="WebApp.styles.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png"/>
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />  
@@ -34,5 +35,17 @@
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script src="js/pickerjs/picker.min.js"></script>
+    <script id="pickerHelper">
+        function SetPickerForElement(elementId){
+            var picker=new Picker(document.getElementById(elementId), {
+                format: 'HH:mm',
+                headers: true,
+                text: {
+                    title: 'Pick a time',
+                },
+            });
+        }
+    </script>
 </body>
 </html>

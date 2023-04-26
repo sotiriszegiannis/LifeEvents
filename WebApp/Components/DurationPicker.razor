@@ -1,0 +1,45 @@
+﻿@inject IJSRuntime JS
+<MudTextField T="string" Label="Duration" @bind-Value="PickerJSElementValue" Class="js-time-picker" id="@PickerJSElementId" />
+@code {
+    [Parameter]
+    public int DurationInMinutes { get; set; }
+    [Parameter]
+    public EventCallback<int> DurationInMinutesChanged { get; set; }
+    public void SetDuration(int minutes)
+    {
+        var hours = minutes / 60;
+        var minutesLeft = minutes % 60;
+        _PickerJSElementValue = $"{hours}:{minutesLeft}";
+    }
+    string _PickerJSElementValue { get; set; }
+    string PickerJSElementValue
+    {
+        get
+        {
+            return _PickerJSElementValue;
+        }
+        set
+        {
+            _PickerJSElementValue = value;
+            if (!string.IsNullOrEmpty(_PickerJSElementValue))
+            {
+                try
+                {
+                    var minutes = int.Parse(_PickerJSElementValue.Split(":")[1]);
+                    var hours = int.Parse(_PickerJSElementValue.Split(":")[0]);
+                    DurationInMinutes = (hours * 60) + minutes;
+                    DurationInMinutesChanged.InvokeAsync(DurationInMinutes);
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+        }
+    }    
+    string PickerJSElementId { get; set; } = Guid.NewGuid().ToString();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.InvokeVoidAsync("SetPickerForElement", PickerJSElementId);
+        await base.OnAfterRenderAsync(firstRender);
+    }   
+}
