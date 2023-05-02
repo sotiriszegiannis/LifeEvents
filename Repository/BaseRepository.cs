@@ -15,13 +15,13 @@ namespace Repository
             DbContextFactory = dbContextFactory;
             TenantResolver = tenantResolver;
         }
-        public bool LazyLoading { get; set; } = true;
-        public bool RelationsEagerLoading { get; set; } = true;
-        public async virtual Task<DbEntity> Get(int id, CancellationToken cancellationToken = default)
+        protected bool LazyLoading { get; set; } = true;
+        protected bool RelationsEagerLoading { get; set; } = true;
+        protected async virtual Task<DbEntity> Get(int id, CancellationToken cancellationToken = default)
         {
             return await _Get(p => p.Id == id);
         }
-        public async Task<int> Last()
+        protected async Task<int> Last()
         {
             using (DbContext db = await GetDbContext())
             {
@@ -31,7 +31,7 @@ namespace Repository
                 return record != null ? record.Id : 0;
             }
         }
-        public async Task<int> Max(Expression<Func<DbEntity, int>> selector)
+        protected async Task<int> Max(Expression<Func<DbEntity, int>> selector)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -39,7 +39,7 @@ namespace Repository
                     .Max(selector);
             }
         }
-        public async Task<int> Max(Expression<Func<DbEntity, int>> selector, Expression<Func<DbEntity, bool>> where)
+        protected async Task<int> Max(Expression<Func<DbEntity, int>> selector, Expression<Func<DbEntity, bool>> where)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -51,7 +51,7 @@ namespace Repository
 
             }
         }
-        public async Task<int> Count(Expression<Func<DbEntity, bool>> where)
+        protected async Task<int> Count(Expression<Func<DbEntity, bool>> where)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -59,7 +59,7 @@ namespace Repository
                     .Count(where);
             }
         }
-        public async Task<TResult> Get<TResult>(int id, Expression<Func<DbEntity, TResult>> selector)
+        protected async Task<TResult> Get<TResult>(int id, Expression<Func<DbEntity, TResult>> selector)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -69,7 +69,7 @@ namespace Repository
                     .FirstOrDefault();
             }
         }
-        public async Task<TResult> Get<TResult>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where)
+        protected async Task<TResult> Get<TResult>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -80,7 +80,7 @@ namespace Repository
             }
         }
         
-        public async Task<object> Get(int id, Expression<Func<DbEntity, object>> selector)
+        protected async Task<object> Get(int id, Expression<Func<DbEntity, object>> selector)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -90,11 +90,11 @@ namespace Repository
                     .FirstOrDefault();
             }
         }
-        public async Task<DbEntity> Get(Expression<Func<DbEntity, bool>> where)
+        protected async Task<DbEntity> Get(Expression<Func<DbEntity, bool>> where)
         {
             return await _Get(where);
         }
-        public async Task<TResult> GetLast<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, TKey>> orderByDescending)
+        protected async Task<TResult> GetLast<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, TKey>> orderByDescending)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -104,7 +104,7 @@ namespace Repository
                     .FirstOrDefault();
             }
         }
-        public async Task<TResult> GetLast<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, TKey>> orderByDescending)
+        protected async Task<TResult> GetLast<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, TKey>> orderByDescending)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -115,7 +115,7 @@ namespace Repository
                     .FirstOrDefault();
             }
         }
-        public async Task<TResult> GetFirst<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, TKey>> orderBy)
+        protected async Task<TResult> GetFirst<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, TKey>> orderBy)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -126,7 +126,7 @@ namespace Repository
                     .FirstOrDefault();
             }
         }
-        public async Task<List<TResult>> GetLast<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, TKey>> orderByDescending, int numberOfRows)
+        protected async Task<List<TResult>> GetLast<TResult, TKey>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, TKey>> orderByDescending, int numberOfRows)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -138,7 +138,7 @@ namespace Repository
                     .ToList();
             }
         }
-        public async Task<List<DbEntity>> GetAll()
+        protected async Task<List<DbEntity>> GetAll()
         {
             List<DbEntity> entities = new List<DbEntity>();
             using (DbContext db = await GetDbContext())
@@ -147,7 +147,7 @@ namespace Repository
             }
             return entities;
         }
-        public async Task<List<TResult>> GetAll<TResult>(Expression<Func<DbEntity, TResult>> selector)
+        protected async Task<List<TResult>> GetAll<TResult>(Expression<Func<DbEntity, TResult>> selector)
         {
             List<DbEntity> entities = new List<DbEntity>();
             using (DbContext db = await GetDbContext())
@@ -157,7 +157,7 @@ namespace Repository
                     .ToList();
             }
         }
-        public async Task<List<DbEntity>> GetAllWithCriteria(Expression<Func<DbEntity, bool>> where)
+        protected async Task<List<DbEntity>> GetAllWithCriteria(Expression<Func<DbEntity, bool>> where)
         {
             List<DbEntity> entities = new List<DbEntity>();
             using (DbContext db = await GetDbContext())
@@ -168,7 +168,7 @@ namespace Repository
             //    entities.ForEach(p => ParseEntityWithJsonProperties(p));
             return entities;
         }
-        public async Task<List<TResult>> GetAllWithCriteria<TResult>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where)
+        protected async Task<List<TResult>> GetAllWithCriteria<TResult>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -178,7 +178,7 @@ namespace Repository
                     .ToList();
             }
         }
-        public async Task<List<TResult>> GetAllWithCriteria<TResult>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, long>> orderBy)
+        protected async Task<List<TResult>> GetAllWithCriteria<TResult>(Expression<Func<DbEntity, TResult>> selector, Expression<Func<DbEntity, bool>> where, Expression<Func<DbEntity, long>> orderBy)
         {
             using (DbContext db = await GetDbContext())
             {
@@ -189,11 +189,11 @@ namespace Repository
                     .ToList();
             }
         }
-        public async Task<int> Update(int? id, Action<DbEntity> editValues, bool createIfNotFound = false)
+        protected async Task<int> Update(int? id, Action<DbEntity> editValues, bool createIfNotFound = false)
         {
             return await Update(p => p.Id == id, editValues, createIfNotFound);
         }
-        public async Task<int> Update(Expression<Func<DbEntity, bool>> where, Action<DbEntity> editValues, bool createIfNotFound = false, bool errorIfNotFound = true)
+        protected async Task<int> Update(Expression<Func<DbEntity, bool>> where, Action<DbEntity> editValues, bool createIfNotFound = false, bool errorIfNotFound = true)
         {
             DbEntity dbEntity = default(DbEntity);
             using (DbContext db = await GetDbContext())
@@ -222,7 +222,7 @@ namespace Repository
             }
             return dbEntity.Id;
         }
-        public async Task<List<int>> UpdateMany(Action<DbEntity> editValues, Expression<Func<DbEntity, bool>> where = null)
+        protected async Task<List<int>> UpdateMany(Action<DbEntity> editValues, Expression<Func<DbEntity, bool>> where = null)
         {
             List<DbEntity> dbEntities = null;
             using (DbContext db = await GetDbContext())
@@ -247,7 +247,7 @@ namespace Repository
                              .Select(p => p.Id)
                              .ToList();
         }
-        public async Task<List<int>> AddMany(List<DbEntity> dbEntitiesToAdd)
+        protected async Task<List<int>> AddMany(List<DbEntity> dbEntitiesToAdd)
         {
             if (dbEntitiesToAdd != null)
             {
@@ -267,7 +267,7 @@ namespace Repository
             else
                 return null;
         }
-        public virtual async Task<int> Save(DbEntity entity)
+        protected virtual async Task<int> Save(DbEntity entity)
         {
             int dbEntityId = 0;
             try
@@ -280,7 +280,7 @@ namespace Repository
             }
             return dbEntityId;
         }
-        public async virtual Task<bool> Delete(int id, Action<DbEntity, DbContext> onBeforeSave = null)
+        protected async virtual Task<bool> Delete(int id, Action<DbEntity, DbContext> onBeforeSave = null)
         {
             try
             {
@@ -299,7 +299,7 @@ namespace Repository
                 return false;
             }
         }
-        public async Task<bool> Delete(List<int> ids)
+        protected async Task<bool> Delete(List<int> ids)
         {
             try
             {
@@ -317,7 +317,7 @@ namespace Repository
                 return false;
             }
         }
-        public async Task<bool> Delete(Expression<Func<DbEntity, bool>> where)
+        protected async Task<bool> Delete(Expression<Func<DbEntity, bool>> where)
         {
             try
             {
@@ -335,7 +335,7 @@ namespace Repository
                 return false;
             }
         }
-        public async Task<bool> DeleteAll()
+        protected async Task<bool> DeleteAll()
         {
             try
             {
@@ -391,7 +391,7 @@ namespace Repository
             db.Set<DbEntity>().Add(newEntity);
             return newEntity;
         }
-        public virtual void Map(DbEntity fromEntity, DbEntity toEntity,DbContext dbContext)
+        protected virtual void Map(DbEntity fromEntity, DbEntity toEntity,DbContext dbContext)
         {
             PropertyInfo[] props = fromEntity.GetType().GetProperties();
             foreach (PropertyInfo oneProperty in props)

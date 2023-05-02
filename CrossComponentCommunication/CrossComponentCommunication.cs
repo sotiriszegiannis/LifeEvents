@@ -2,17 +2,17 @@
 
 namespace CrossComponentCommunication
 {
-    public class CrossComponentCommunication<T>
+    public class CrossComponentCommunication
     {
-        List<(BroadcastTypeEnum broadcastType,Action<T> listener)> Listeners { get; set; } = new List<(BroadcastTypeEnum broadcastType, Action<T> listener)> ();
-        public void Broadcast(BroadcastTypeEnum broadcastType,T message)
+        List<(BroadcastTypeEnum broadcastType,Action<IBroadcastMessage> listener)> Listeners { get; set; } = new List<(BroadcastTypeEnum broadcastType, Action<IBroadcastMessage> listener)> ();
+        public void Broadcast(BroadcastTypeEnum broadcastType, IBroadcastMessage message)
         {
             try
             {
                 Listeners
                         .Where(p => p.broadcastType == broadcastType)
                         .ToList()
-                        .ForEach(p =>
+                        .ForEach(async p =>
                         {
                             p.listener(message);
                         });
@@ -21,7 +21,7 @@ namespace CrossComponentCommunication
                 throw ex;
             }            
         }
-        public void ListenerTo(BroadcastTypeEnum broadcastType,Action<T> listener) => Listeners.Add((broadcastType,listener));
+        public void ListenTo(BroadcastTypeEnum broadcastType,Action<IBroadcastMessage> listener) => Listeners.Add((broadcastType,listener));
 
     }
 }

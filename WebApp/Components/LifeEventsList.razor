@@ -1,21 +1,70 @@
-﻿@inject LifeEventsRepository LifeEventsRepository
-@inject CrossComponentCommunication.CrossComponentCommunication<int> CrossComponentCommunication
+﻿@inject ISnackbar Snackbar
+@inject LifeEventsRepository LifeEventsRepository
+@inject CrossComponentCommunication CrossComponentCommunication
 <ul class="list-group">
-    @foreach (var lifeEvent in lifeEvents)
+    @foreach (var lifeEvent in lifeEvents.OrderByDescending(p => p.DateCreated))
     {
-        <li class="list-group-item">@lifeEvent.Name for @lifeEvent.DurationInMinutes</li>
+        <li class="list-group-item">
+            <span style="font-size:xx-large">@lifeEvent.Title</span>
+            <div style="display:inline-block">
+                @if (lifeEvent.Tags != null && lifeEvent.Tags.Count > 0)
+                {
+                    <MudChipSet ReadOnly="true">
+                        <MudChip Text="Grey">@lifeEvent.Tags[0].Name</MudChip>
+                    </MudChipSet>
+                }
+            </div>
+            <MudSpacer />
+            <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@GetDurationText(lifeEvent.DurationInMinutes)</div>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteLifeEvent(lifeEvent)"></MudIconButton>
+        </li>
     }
 </ul>
 
 @code {
-    List<LifeEvent> lifeEvents = new List<LifeEvent>();
+    List<LifeEventRDTO> lifeEvents = new List<LifeEventRDTO>();
     protected override async Task OnInitializedAsync()
     {
-        lifeEvents=await LifeEventsRepository.GetAll();
-        CrossComponentCommunication.ListenerTo(BroadcastTypeEnum.NewLifeEvent, OnNewLifeEvent);
+        lifeEvents = await LifeEventsRepository.GetAll();
+        CrossComponentCommunication.ListenTo(BroadcastTypeEnum.NewLifeEvent, OnNewLifeEvent);
     }
-    void OnNewLifeEvent(int recordId)
+    string GetDurationText(int durationInMinutes)
     {
-        
+        if (durationInMinutes < 60)
+        {
+            if (durationInMinutes > 0)
+                return $"{durationInMinutes}'";
+            else
+                return "";
+        }
+        else
+        {
+            var hours = durationInMinutes / 60;
+            var minutes = durationInMinutes % 60;
+            if (minutes > 0)
+                return $"{hours}h {minutes}'";
+            else
+                return $"{hours}h";
+        }
+    }
+    async void DeleteLifeEvent(LifeEventRDTO lifeEvent)
+    {
+        if (await LifeEventsRepository.Delete(lifeEvent.Id!.Value))
+        {
+            Snackbar.Add("Deleted", Severity.Success);
+            lifeEvents.Remove(lifeEvent);
+        }
+        else
+            Snackbar.Add("An error occured!", Severity.Error);
+    }
+    async void OnNewLifeEvent(IBroadcastMessage message)
+    {
+        if (message is NewLifeEventBroadcastMessage)
+        {
+            var newLifeEventMessage = message as NewLifeEventBroadcastMessage;
+            var newRec = await LifeEventsRepository.Get((message as NewLifeEventBroadcastMessage).LifeEventId);
+            lifeEvents.Add(newRec);
+            StateHasChanged();
+        }
     }
 }

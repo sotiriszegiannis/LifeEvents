@@ -2,53 +2,87 @@
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @inject LifeEventsRepository LifeEventsRepository
-@inject CrossComponentCommunication.CrossComponentCommunication<int> CrossComponentCommunication
+@inject CrossComponentCommunication CrossComponentCommunication
 <MudGrid>
     <MudItem xs="12" sm="12">
         <MudPaper Class="pa-4">
             <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
-                <MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Name" />
-                <Tags @bind-SelectedTags="Tags"></Tags>
-                <MudTextField T="string" Label="Description" @bind-Value="LifeEventDTO.Description" />
-                <Duration DateRange="DateRange"></Duration>                                
-                <MudTextField T="string" Label="Location" @bind-Value="LifeEventDTO.Location" />
+                <MyAutocomplete Items="ExistingEventTitles" TextChanged="EventTitleChanged" Label="Title"></MyAutocomplete>
+                @*<MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Title" />*@
+                <TagSelector @bind-Tags="Tags"></TagSelector>
+                <MudTextField T="string" Label="Description" @bind-Value="LifeEvent.Description" />
+                <Duration DateRange="DateRange"></Duration>
+                <MudTextField T="string" Label="Location" @bind-Value="LifeEvent.Location" />
             </MudForm>
-        </MudPaper>        
+        </MudPaper>
     </MudItem>
 </MudGrid>
 
 
 @code {
-    List<ListItem<int,object>> Tags { get; set; }
+    List<ListItem<int, object>> Tags { get; set; }
     EventDateRange DateRange { get; set; } = new EventDateRange();
     bool success;
     string[] errors = { };
     MudForm form;
-    LifeEventRDTO LifeEventDTO = new Repository.LifeEventRDTO();       
+    LifeEventRDTO LifeEvent = new LifeEventRDTO();
+    List<ListItem<string,object>> ExistingEventTitles { get; set; }= new List<ListItem<string, object>>();
     public override async Task<Subscriber> Save()
     {
-        var result=new Subscriber();
-        await form.Validate();        
+        var result = new Subscriber();
+        await form.Validate();
         if (form.IsValid)
         {
-            LifeEventDTO.From = DateRange?.From;
-            LifeEventDTO.To = DateRange?.To;
-            LifeEventDTO.Tags = Tags?.Select(p => new TagRDTO()
+            LifeEvent.From = DateRange?.From;
+            LifeEvent.To = DateRange?.To;
+            LifeEvent.Tags = Tags?.Select(p => new TagRDTO()
                 {
                     Id = p.Key,
-                    Name = p.Value
+                    Name = p.Text
                 })
             .ToList()!;
-            var id = await LifeEventsRepository.Save(LifeEventDTO);
-            if(id > 0)
+            var id = await LifeEventsRepository.Save(LifeEvent);
+            if (id > 0)
             {
-                result.EditorSaveResultType=EditorSaveResultTypeEnum.Saved;
-                CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent,id);
-            } 
-            result.EditorSaveResultType=EditorSaveResultTypeEnum.SaveError;
+                result.EditorSaveResultType = EditorSaveResultTypeEnum.Saved;
+                CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent, new NewLifeEventBroadcastMessage(id));                
+            }
+            else
+                result.EditorSaveResultType = EditorSaveResultTypeEnum.SaveError;
         }
         else
-            result.EditorSaveResultType=EditorSaveResultTypeEnum.ValidationErrors;
-            return result;
+            result.EditorSaveResultType = EditorSaveResultTypeEnum.ValidationErrors;
+        return result;
+    }
+    protected async override Task OnInitializedAsync()
+    {
+        ExistingEventTitles = (await LifeEventsRepository.GetAllTitles())
+                                .GroupBy(p=>p.title)
+                                .Select(p=>p.OrderByDescending(x=>x.id).FirstOrDefault())
+                                .Select(p => new ListItem<string, object>(p.id.ToString(), p.title))
+                                .ToList();
+        await base.OnInitializedAsync();
+    }
+    async void EventTitleChanged(ListItem<string, object> listItem)
+    {
+        if(listItem!=null)
+        {
+            var lifeEvent=await LifeEventsRepository.Get(int.Parse(listItem.Key));
+            if (lifeEvent != null)
+                ModelToScreen(lifeEvent, true);
+        }
+    }
+    void ModelToScreen(LifeEventRDTO lifeEvent,bool useAsTemplate)
+    {
+        if (LifeEvent != null)
+        {
+            DateRange.From = lifeEvent.From;
+            DateRange.To = lifeEvent.To;
+            Tags = lifeEvent.Tags?.Select(p => new ListItem<int, object>(p.Id, p.Name)).ToList();
+            LifeEvent.Title = lifeEvent.Title;
+            LifeEvent.Description = lifeEvent.Description;
+            LifeEvent.Location = lifeEvent.Location;
+            StateHasChanged();
+        }
     }
 }

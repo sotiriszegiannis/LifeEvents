@@ -135,9 +135,8 @@ namespace WebApp.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _tenantResolver.SetCurrentTenantId(user.Email);
-                    await _usersRepository.Save(new Domain.User()
+                    await _usersRepository.Save(user.Email,new UserRDTO()
                     {
-                        TenantId = user.Email,
                         Name = Input.Username,
                         TimeZone = Input.IanaTimeZone
                     });

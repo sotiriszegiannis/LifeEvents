@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Areas.Identity;
 using WebApp.Data;
-using Domain;
 using MudBlazor.Services;
 using Repository;
 using CrossComponentCommunication;
+using Domain;
 
 namespace WebApp;
 
@@ -34,7 +34,7 @@ public class Program
         builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
         builder.Services.AddScoped<ITenantResolver, TenantResolver>();
         builder.Services.AddAutoMapper(p => p.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
-        builder.Services.AddSingleton(typeof(CrossComponentCommunication.CrossComponentCommunication<object>));
+        builder.Services.AddScoped(typeof(CrossComponentCommunication.CrossComponentCommunication));
         builder.Services.AddScoped<UsersRepository>();
         builder.Services.AddScoped<LifeEventsRepository>();
         builder.Services.AddScoped<TagsRepository>();

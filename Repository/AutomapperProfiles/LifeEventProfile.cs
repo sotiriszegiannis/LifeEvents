@@ -1,15 +1,12 @@
 ﻿using AutoMapper;
 using Domain;
-using Repository;
-using WebApp.DTOs.RepositoryDTOs;
-
-namespace WebApp
+namespace Repository
 {
     public class LifeEventProfile : Profile
     {
         public LifeEventProfile()
         {
-            CreateMap<LifeEvent, LifeEventDTO>().ReverseMap();
+            CreateMap<LifeEvent, LifeEventRDTO>().ReverseMap();
         }
     }
 }

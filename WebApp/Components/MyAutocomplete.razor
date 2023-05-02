@@ -1,27 +1,34 @@
 ﻿<div class="mud-input-control mud-input-required mud-input-error mud-input-input-control">
     <div class="mud-input-control-input-container">
-        <div class="mud-input mud-input-text mud-input-underline">
+        <div class="mud-input mud-input-text mud-input-underline mud-shrink">
             <input class="mud-input-slot mud-input-root mud-input-root-text" type="text" inputmode="text" maxlength="524288" @bind="@Text" @bind:event="oninput" @onkeydown="@Enter">
         </div>
-        <label class="mud-input-label mud-input-label-animated mud-input-label-text mud-input-label-inputcontrol">Tags</label>
-    </div>    
+        <label class="mud-input-label mud-input-label-animated mud-input-label-text mud-input-label-inputcontrol">@Label</label>
+    </div>
 </div>
 <MudMenu Dense="true" @ref="MudMenu">
     <ActivatorContent></ActivatorContent>
     <ChildContent>
         @foreach (var item in MenuItems)
         {
-            <MudMenuItem OnClick="@(()=>SelectItem(item))">@item</MudMenuItem>
+            <MudMenuItem OnClick="@(()=>SelectItem(item))">@item.Text</MudMenuItem>
         }
     </ChildContent>
 </MudMenu>
 @code {
+    /// <summary>
+    /// If true, the selected item will be reset to null when the user types in the input field.This can happen
+    /// after the user either hits the 'Enter' key or selects an item from the list.
+    /// </summary>
+    [Parameter]
+    public bool? ResetOnSelect { get; set; }
     [Parameter]
     public string Label { get; set; }
     [Parameter]
-    public List<string> Items { get; set; }
+    public List<ListItem<string, object>> Items { get; set; }
     string _Text { get; set; }
-    string Text
+    [Parameter]
+    public string Text
     {
         get
         {
@@ -38,16 +45,16 @@
         }
     }
     [Parameter]
-    public Action<string> TextChanged { get; set; }
+    public Action<ListItem<string, object>> TextChanged { get; set; }
     //string TextValue { get; set; }
     MudMenu MudMenu { get; set; }
-    List<string> MenuItems = new List<string>();
-    private List<string> GetMenuItems(string value)
+    List<ListItem<string, object>> MenuItems = new List<ListItem<string, object>>();
+    private List<ListItem<string, object>> GetMenuItems(string value)
     {
         if (string.IsNullOrEmpty(value))
-            return new List<string>();
+            return new List<ListItem<string, object>>();
         else
-            return Items.Where(p => p.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p).ToList();
+            return Items.Where(p => p.Text.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p).ToList();
     }
     protected override Task OnInitializedAsync()
     {
@@ -57,13 +64,19 @@
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            SelectItem(_Text);
+            var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
+            if (existingItem != null)
+                SelectItem(existingItem);
+            else
+                SelectItem(new ListItem<string, object>(Guid.NewGuid().ToString(), _Text));
         }
     }
-    void SelectItem(string value)
+    void SelectItem(ListItem<string, object> listItem)
     {
+        _Text = listItem.Text;
         if (TextChanged != null)
-            TextChanged(value);
-        _Text = "";
+            TextChanged(listItem);
+        if (ResetOnSelect.HasValue && ResetOnSelect.Value)
+            _Text = "";
     }
 }

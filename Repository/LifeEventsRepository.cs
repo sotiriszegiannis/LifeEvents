@@ -1,20 +1,42 @@
-﻿using Domain;
+﻿using AutoMapper;
+using Domain;
+using Helper;
 using Microsoft.EntityFrameworkCore;
-using Repository;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection.Metadata.Ecma335;
+using System.Linq.Expressions;
 
 namespace Repository
 {
     public class LifeEventsRepository : BaseRepository<LifeEvent>
     {
-        public LifeEventsRepository(IDbContextFactory<AppDbContext> dbContextFactory, ITenantResolver tenantResolver) : base(dbContextFactory, tenantResolver) { }
+        
+        IMapper Mapper { get; set; }
+        public LifeEventsRepository(IDbContextFactory<AppDbContext> dbContextFactory, ITenantResolver tenantResolver, IMapper mapper) : base(dbContextFactory, tenantResolver) { 
+            Mapper = mapper;
+            base.RelationsEagerLoading = true;
+        }
+        protected override IQueryable<LifeEvent> LoadRelations(IQueryable<LifeEvent> dbSet)
+        {
+            return dbSet
+                    .Include(p => p.Tags);
+        }
         [Obsolete("Cannot save directly a LifeEvent entity", true)]
-        public override Task<int> Save(LifeEvent entity)
+        public Task<int> Save(LifeEvent entity)
         {
             return base.Save(entity);
+        }
+        public async Task<List<LifeEventRDTO>> GetAll()
+        {
+            return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAll()!);
+        }
+        public async Task<List<(string title,int id)>> GetAllTitles()
+        {
+            var result = await base.GetAll(p => new ListItem<int, object>(p.Id, p.Title, null!));
+            return result.Select(p => (p.Text, p.Key)).ToList();
+                
+        }
+        public async Task<LifeEventRDTO> Get(int id)
+        {
+            return Mapper.Map<LifeEvent, LifeEventRDTO>(await base.Get(id));
         }
         public async Task<int> Save(LifeEventRDTO lifeEventDTO)
         {
@@ -24,7 +46,7 @@ namespace Repository
                 lifeEvent = new LifeEvent();
                 lifeEvent.From = !lifeEventDTO.From.HasValue ? DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes) : lifeEventDTO.From.Value;
                 lifeEvent.To = !lifeEventDTO.To.HasValue ? lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes) : lifeEventDTO.To.Value;
-                lifeEvent.Name = lifeEventDTO.Name;
+                lifeEvent.Title = lifeEventDTO.Title;
                 lifeEvent.Description = lifeEventDTO.Description;
                 lifeEvent.Location = lifeEventDTO.Location;
                 lifeEvent.DateCreated = DateTime.UtcNow;
@@ -38,7 +60,11 @@ namespace Repository
             }
             return 0;
         }
-        public override void Map(LifeEvent fromEntity, LifeEvent toEntity, DbContext dbContext)
+        public async Task<bool> Delete(int id)
+        {
+            return await base.Delete(id);
+        }
+        protected override void Map(LifeEvent fromEntity, LifeEvent toEntity, DbContext dbContext)
         {
             List<Tag> dbTags = null;
             toEntity.User = (dbContext as AppDbContext)?.Users.FirstOrDefault()!;            

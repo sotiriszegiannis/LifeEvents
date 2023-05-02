@@ -16,6 +16,15 @@ namespace Repository
                 p.TimeZone = userRDTO.TimeZone;
             });
         }
+        public Task<int> Save(string userEmail,UserRDTO user)
+        {
+            return base.Update(user.Id,p=>{
+                p.Id = user.Id;
+                p.Name = user.Name;
+                p.TimeZone = user.TimeZone;
+                p.TenantId = userEmail;
+            },true);
+        }
         public async Task<UserRDTO> Get()
         {
             var tenantId = TenantResolver.GetCurrentTenantId();

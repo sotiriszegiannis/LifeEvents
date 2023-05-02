@@ -1,4 +1,4 @@
-﻿using Domain;
+﻿ using Domain;
 using System.Diagnostics;
 
 namespace WebApp
@@ -11,7 +11,7 @@ namespace WebApp
         public TenantResolver(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
-            TenantId = _httpContextAccessor?.HttpContext.User.Identity.Name;
+            TenantId = _httpContextAccessor?.HttpContext?.User?.Identity?.Name!;
             Debug.WriteLine("*********************************TenantResolver instantiated through DI*****************");
         }
 

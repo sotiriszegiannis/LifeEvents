@@ -22,7 +22,7 @@ namespace Domain
             }
         }
         [TableColumnAttr]
-        public string Name { get; set; }
+        public string Title { get; set; }
         [TableColumnAttr]
         public string? Description { get; set; }
         public User User { get; set; }
