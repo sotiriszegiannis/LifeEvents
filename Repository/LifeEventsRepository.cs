@@ -24,6 +24,10 @@ namespace Repository
         {
             return base.Save(entity);
         }
+        public async Task<List<LifeEventRDTO>> GetAll(DateTime from,DateTime to)
+        {
+            return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.From >= from && p.To <= to)!);
+        }        
         public async Task<List<LifeEventRDTO>> GetAll()
         {
             return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAll()!);
@@ -38,14 +42,14 @@ namespace Repository
         {
             return Mapper.Map<LifeEvent, LifeEventRDTO>(await base.Get(id));
         }
-        public async Task<int> Save(LifeEventRDTO lifeEventDTO)
+        public async Task<int> AddNew(LifeEventRDTO lifeEventDTO)
         {
             LifeEvent lifeEvent = new LifeEvent();
             if (lifeEvent.Id == 0)
             {
                 lifeEvent = new LifeEvent();
-                lifeEvent.From = !lifeEventDTO.From.HasValue ? DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes) : lifeEventDTO.From.Value;
-                lifeEvent.To = !lifeEventDTO.To.HasValue ? lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes) : lifeEventDTO.To.Value;
+                lifeEvent.From = (!lifeEventDTO.From.HasValue ? DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes) : lifeEventDTO.From.Value).ToUniversalTime();
+                lifeEvent.To = (!lifeEventDTO.To.HasValue ? lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes) : lifeEventDTO.To.Value).ToUniversalTime();
                 lifeEvent.Title = lifeEventDTO.Title;
                 lifeEvent.Description = lifeEventDTO.Description;
                 lifeEvent.Location = lifeEventDTO.Location;

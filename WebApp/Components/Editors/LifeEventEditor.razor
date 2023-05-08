@@ -7,7 +7,7 @@
     <MudItem xs="12" sm="12">
         <MudPaper Class="pa-4">
             <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
-                <MyAutocomplete Items="ExistingEventTitles" TextChanged="EventTitleChanged" Label="Title"></MyAutocomplete>
+                <MyAutocomplete Items="ExistingEventTitles" TextChanged="EventTitleChanged" Label="Title" Immediate="true"></MyAutocomplete>
                 @*<MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Title" />*@
                 <TagSelector @bind-Tags="Tags"></TagSelector>
                 <MudTextField T="string" Label="Description" @bind-Value="LifeEvent.Description" />
@@ -21,12 +21,12 @@
 
 @code {
     List<ListItem<int, object>> Tags { get; set; }
-    EventDateRange DateRange { get; set; } = new EventDateRange();
+        WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
     bool success;
     string[] errors = { };
     MudForm form;
     LifeEventRDTO LifeEvent = new LifeEventRDTO();
-    List<ListItem<string,object>> ExistingEventTitles { get; set; }= new List<ListItem<string, object>>();
+    List<ListItem<string, object>> ExistingEventTitles { get; set; } = new List<ListItem<string, object>>();
     public override async Task<Subscriber> Save()
     {
         var result = new Subscriber();
@@ -41,11 +41,11 @@
                     Name = p.Text
                 })
             .ToList()!;
-            var id = await LifeEventsRepository.Save(LifeEvent);
+            var id = await LifeEventsRepository.AddNew(LifeEvent);
             if (id > 0)
             {
                 result.EditorSaveResultType = EditorSaveResultTypeEnum.Saved;
-                CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent, new NewLifeEventBroadcastMessage(id));                
+                CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent, new NewLifeEventBroadcastMessage(id));
             }
             else
                 result.EditorSaveResultType = EditorSaveResultTypeEnum.SaveError;
@@ -57,22 +57,30 @@
     protected async override Task OnInitializedAsync()
     {
         ExistingEventTitles = (await LifeEventsRepository.GetAllTitles())
-                                .GroupBy(p=>p.title)
-                                .Select(p=>p.OrderByDescending(x=>x.id).FirstOrDefault())
+                                .GroupBy(p => p.title)
+                                .Select(p => p.OrderByDescending(x => x.id).FirstOrDefault())
                                 .Select(p => new ListItem<string, object>(p.id.ToString(), p.title))
                                 .ToList();
         await base.OnInitializedAsync();
     }
     async void EventTitleChanged(ListItem<string, object> listItem)
     {
-        if(listItem!=null)
+        if (listItem != null)
         {
-            var lifeEvent=await LifeEventsRepository.Get(int.Parse(listItem.Key));
-            if (lifeEvent != null)
-                ModelToScreen(lifeEvent, true);
+            int id = 0;
+            if (int.TryParse(listItem.Key, out id))
+            {
+                var lifeEvent = await LifeEventsRepository.Get(int.Parse(listItem.Key));
+                if (lifeEvent != null)
+                    ModelToScreen(lifeEvent, true);
+                else
+                    LifeEvent.Title = listItem!.Text;
+            }
+            else
+                LifeEvent.Title = listItem!.Text;
         }
     }
-    void ModelToScreen(LifeEventRDTO lifeEvent,bool useAsTemplate)
+    void ModelToScreen(LifeEventRDTO lifeEvent, bool useAsTemplate)
     {
         if (LifeEvent != null)
         {

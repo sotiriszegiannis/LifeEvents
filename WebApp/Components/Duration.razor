@@ -40,10 +40,28 @@
 
 
 @code {
+    WebApp.DateRange _DateRange { get; set; }
     [Parameter]
-    public EventDateRange DateRange { get; set; }
+    public WebApp.DateRange DateRange
+    {
+        get
+        {
+            return _DateRange;
+        }
+        set
+        {
+            if (value == null)
+                value = new WebApp.DateRange();
+            _DateRange = value;
+            if (value.From.HasValue && value.To.HasValue)
+            {
+                DurationInMinutes = (int)(value.To.Value.Subtract(value.From.Value).TotalMinutes);
+                SelectedOption = "Duration";
+            }
+        }
+    }
     [Parameter]
-    public EventCallback<EventDateRange> DateRangeChanged { get; set; }
+    public EventCallback<WebApp.DateRange> DateRangeChanged{ get; set; }
     DurationPicker DurationPicker { get; set; }
     UserRDTO User { get; set; }
     int DurationInMinutes
@@ -59,7 +77,7 @@
         }
         set
         {
-            GetEventDateRange().To = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+            GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
             GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-value);
         }
     }
@@ -74,12 +92,12 @@
         set
         {
             _StartTime = value;
-            var nowAtUserTimeZone = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+            var nowAtUserTimeZone = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
             if (nowAtUserTimeZone.TimeOfDay > _StartTime!.Value)
-                GetEventDateRange().From=nowAtUserTimeZone.Date.Add(_StartTime.Value);
+                GetEventDateRange().From = nowAtUserTimeZone.Date.Add(_StartTime.Value);
             else
-                GetEventDateRange().From=nowAtUserTimeZone.Date.AddDays(-1).Add(_StartTime.Value);            
-            GetEventDateRange().To = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+                GetEventDateRange().From = nowAtUserTimeZone.Date.AddDays(-1).Add(_StartTime.Value);
+            GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
             TriggerDateRangeChangedEvent();
         }
     }
@@ -112,13 +130,15 @@
     MudChip SelectedFixedDuration { get; set; }
     void SelectedFixedDurationChanged(MudChip mudChip)
     {
-        GetEventDateRange().To = DateTime.UtcNow.ToIanaDate(User.TimeZone);
+        GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
         GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-(int)mudChip.Value);
         DurationPicker.SetDuration((int)mudChip.Value);
         TriggerDateRangeChangedEvent();
     }
-    List<(int minutes, string label)> FixedDurations = new List<(int minutes, string label)>() {
-        (5,"5'"), (30,"30'"), (60,"1 hour"), (240,"4 hours"), (420,"7 hours") };
+    List<(int minutes, string label)>
+        FixedDurations = new List<(int minutes, string label)>
+            () {
+            (5,"5'"), (30,"30'"), (60,"1 hour"), (240,"4 hours"), (420,"7 hours") };
     protected async override Task OnInitializedAsync()
     {
         User = await UsersRepository.Get();
@@ -148,11 +168,10 @@
             }
         }
     }
-    EventDateRange GetEventDateRange()
+        WebApp.DateRange GetEventDateRange()
     {
         if (DateRange == null)
-            DateRange = new EventDateRange();
+                DateRange = new WebApp.DateRange();
         return DateRange;
     }
-
 }

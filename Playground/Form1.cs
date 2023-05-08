@@ -28,8 +28,13 @@ namespace Playground
             //    db.SaveChanges();
             //    OnAfterSave(dbEntity, db);
             //}
-            var timeNowInAthens=DateTime.UtcNow.ToIanaDate("Europe/Athens");
+            var startOfDay= DateTime.UtcNow.GetStartOfDayDate();
+            var startOfWeek= DateTime.UtcNow.GetFirstDayOfWeek();
+            var startOfMonth= DateTime.UtcNow.GetFirstDayOfMonth();
+            var timeNowInAthens=DateTime.UtcNow.ToIanaTimeZone("Europe/Athens");
+            var timeUTCNow = timeNowInAthens.FromIanaTimeZone("Europe/Athens");
             var info=TimeZoneInfo.FindSystemTimeZoneById("Europe/Athens");
+
             InitializeComponent();
         }
     }

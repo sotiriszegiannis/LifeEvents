@@ -22,6 +22,11 @@
     /// </summary>
     [Parameter]
     public bool? ResetOnSelect { get; set; }
+    /// <summary>
+    /// if true, it will fire the TextChanged event on every keypress event.
+    /// </summary>
+    [Parameter]
+    public bool? Immediate { get; set; }
     [Parameter]
     public string Label { get; set; }
     [Parameter]
@@ -42,6 +47,8 @@
             else
                 MudMenu.CloseMenu();
             _Text = value;
+            if (Immediate == true)
+                _TextChanged();
         }
     }
     [Parameter]
@@ -64,12 +71,15 @@
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
+            _TextChanged();
+        }
+    }
+    void _TextChanged(){
+        var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
             if (existingItem != null)
                 SelectItem(existingItem);
             else
                 SelectItem(new ListItem<string, object>(Guid.NewGuid().ToString(), _Text));
-        }
     }
     void SelectItem(ListItem<string, object> listItem)
     {

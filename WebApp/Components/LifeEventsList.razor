@@ -1,70 +1,112 @@
 ﻿@inject ISnackbar Snackbar
+@inject UsersRepository UsersRepository
 @inject LifeEventsRepository LifeEventsRepository
 @inject CrossComponentCommunication CrossComponentCommunication
-<ul class="list-group">
-    @foreach (var lifeEvent in lifeEvents.OrderByDescending(p => p.DateCreated))
-    {
-        <li class="list-group-item">
-            <span style="font-size:xx-large">@lifeEvent.Title</span>
-            <div style="display:inline-block">
-                @if (lifeEvent.Tags != null && lifeEvent.Tags.Count > 0)
+<div class="row d-flex justify-content-center">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-5 col-12">
+                    <input type="radio" class="btn-check" name="options" id="today" autocomplete="off"
+                           @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.Today" checked>
+                    <label class="btn btn-secondary" for="today">Today</label>
+
+                    <input type="radio" class="btn-check" name="options" id="thisWeek" autocomplete="off"
+                           @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.ThisWeek">
+                    <label class="btn btn-secondary" for="thisWeek">This week</label>
+
+                    <input type="radio" class="btn-check" name="options" id="thisMonth" autocomplete="off"
+                           @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.ThisMonth">
+                    <label class="btn btn-secondary" for="thisMonth">This month</label>
+                </div>
+                @if (SelectedPeriodType == SelectedPeriodEnum.Today)
                 {
-                    <MudChipSet ReadOnly="true">
-                        <MudChip Text="Grey">@lifeEvent.Tags[0].Name</MudChip>
-                    </MudChipSet>
-                }
+                    <div class="col-md-3 col-12 justify-content-center">
+                        <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleLeft" OnClick="()=>ChangeDate(true)"></MudIconButton>
+                        <h3 style="display:inline">@DateRange?.From?.ToString("MMMM dd")</h3>
+                        @if (DateRange?.From?.DayOfYear < DateTime.UtcNow.DayOfYear)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleRight" OnClick="()=>ChangeDate(false)"></MudIconButton>
+                        }                        
+                    </div>
+                }                
             </div>
-            <MudSpacer />
-            <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@GetDurationText(lifeEvent.DurationInMinutes)</div>
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteLifeEvent(lifeEvent)"></MudIconButton>
-        </li>
-    }
-</ul>
+            
+        </div>
+    </div>
+</div>
+<MudRadioGroup @bind-SelectedOption="@SelectedViewType">
+    <MudRadio Option="@("Grouped")" Color="Color.Primary">Grouped</MudRadio>
+    <MudRadio Option="@("Flat")" Color="Color.Secondary">Flat</MudRadio>
+</MudRadioGroup>
+@if (_SelectedViewType == "Grouped")
+{
+    <GroupedLifeEventsList DateRange="DateRange"></GroupedLifeEventsList>
+}
+else
+{
+    <FlatLifeEventsList DateRange="DateRange"></FlatLifeEventsList>
+}
 
 @code {
-    List<LifeEventRDTO> lifeEvents = new List<LifeEventRDTO>();
-    protected override async Task OnInitializedAsync()
+    UserRDTO User { get; set; }
+    WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
+    SelectedPeriodEnum _SelectedPeriodType { get; set; } = SelectedPeriodEnum.Today;
+    SelectedPeriodEnum SelectedPeriodType
     {
-        lifeEvents = await LifeEventsRepository.GetAll();
-        CrossComponentCommunication.ListenTo(BroadcastTypeEnum.NewLifeEvent, OnNewLifeEvent);
+        get
+        {
+            return _SelectedPeriodType;
+        }
+        set
+        {
+            _SelectedPeriodType = value;
+            if (User != null)
+                switch (value)
+                {
+                    case SelectedPeriodEnum.Today:
+                        DateRange.From = DateTime.UtcNow.GetStartOfDayDate();
+                        DateRange.To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+                        break;
+                    case SelectedPeriodEnum.ThisWeek:
+                        DateRange.From = DateTime.UtcNow.GetFirstDayOfWeek();
+                        DateRange.To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+                        break;
+                    case SelectedPeriodEnum.ThisMonth:
+                        DateRange.From = DateTime.UtcNow.GetFirstDayOfMonth();
+                        DateRange.To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+                        break;
+                }
+        }
     }
-    string GetDurationText(int durationInMinutes)
+    string _SelectedViewType { get; set; } = "Grouped";
+    string SelectedViewType
     {
-        if (durationInMinutes < 60)
+        get
         {
-            if (durationInMinutes > 0)
-                return $"{durationInMinutes}'";
-            else
-                return "";
+            return _SelectedViewType;
         }
-        else
+        set
         {
-            var hours = durationInMinutes / 60;
-            var minutes = durationInMinutes % 60;
-            if (minutes > 0)
-                return $"{hours}h {minutes}'";
-            else
-                return $"{hours}h";
+            _SelectedViewType = value;
         }
     }
-    async void DeleteLifeEvent(LifeEventRDTO lifeEvent)
+    protected async override Task OnInitializedAsync()
     {
-        if (await LifeEventsRepository.Delete(lifeEvent.Id!.Value))
-        {
-            Snackbar.Add("Deleted", Severity.Success);
-            lifeEvents.Remove(lifeEvent);
-        }
-        else
-            Snackbar.Add("An error occured!", Severity.Error);
+        User = await UsersRepository.Get();
+        SelectedPeriodType = SelectedPeriodEnum.Today;
+        await base.OnInitializedAsync();
     }
-    async void OnNewLifeEvent(IBroadcastMessage message)
+    void ChangeDate(bool goBack)
     {
-        if (message is NewLifeEventBroadcastMessage)
-        {
-            var newLifeEventMessage = message as NewLifeEventBroadcastMessage;
-            var newRec = await LifeEventsRepository.Get((message as NewLifeEventBroadcastMessage).LifeEventId);
-            lifeEvents.Add(newRec);
-            StateHasChanged();
-        }
+        int dayToGo = goBack ? -1 : 1;        
+        DateRange.From = DateRange.From?.AddDays(dayToGo).GetStartOfDayDate();
+        DateRange.To = DateRange.From?.GetEndOfDayDate();
+    }
+    enum SelectedPeriodEnum
+    {
+        Today,
+        ThisWeek,
+        ThisMonth
     }
 }

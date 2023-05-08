@@ -1,8 +1,19 @@
 ﻿@inject IJSRuntime JS
 <MudTextField T="string" Label="Duration" @bind-Value="PickerJSElementValue" Class="js-time-picker" id="@PickerJSElementId" />
 @code {
+    public int _DurationInMinutes { get; set; }
     [Parameter]
-    public int DurationInMinutes { get; set; }
+    public int DurationInMinutes {
+        get
+        {
+            return _DurationInMinutes;
+        }
+        set
+        {
+            _DurationInMinutes = value;
+            SetDuration(value);
+        }
+    }
     [Parameter]
     public EventCallback<int> DurationInMinutesChanged { get; set; }
     public void SetDuration(int minutes)

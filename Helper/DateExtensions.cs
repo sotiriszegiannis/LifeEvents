@@ -5,12 +5,35 @@ namespace Helper
 {
     public static class DateExtensions
     {
-        public static DateTime ToIanaDate(this DateTime utcNow,string ianaTimeZone)
+        /// <summary>
+        /// Converts a UTC time to a local time
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="ianaTimeZone"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static DateTime ToIanaTimeZone(this DateTime date,string ianaTimeZone)
         {
             string windowsTimeZone;
             if(!TimeZoneInfo.TryConvertIanaIdToWindowsId(ianaTimeZone, out windowsTimeZone))
                 throw new ArgumentOutOfRangeException("ianatimezone could not be related to windows timezone");
-            return utcNow.ToTimeZone(windowsTimeZone);
+            var convertedDate = date.ToTimeZone(windowsTimeZone);            
+            return DateTime.SpecifyKind(convertedDate, DateTimeKind.Unspecified);
+        }
+        /// <summary>
+        /// Converts a local time to a UTC time
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="ianaTimeZone"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static DateTime FromIanaTimeZone(this DateTime date, string ianaTimeZone)
+        {
+            string windowsTimeZone;
+            if (!TimeZoneInfo.TryConvertIanaIdToWindowsId(ianaTimeZone, out windowsTimeZone))
+                throw new ArgumentOutOfRangeException("ianatimezone could not be related to windows timezone");                        
+            var convertedDate = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(date, DateTimeKind.Unspecified), TimeZoneInfo.FindSystemTimeZoneById(windowsTimeZone));            
+            return convertedDate;
         }
         public static bool IsTheSameDayWith(this DateTime inputDateTime, DateTime comparableDateTime)
         {
@@ -196,6 +219,11 @@ namespace Helper
         {
             var daysInMonth = DateTime.DaysInMonth(dateTime.Year, dateTime.Month);
             return new DateTime(dateTime.Year, dateTime.Month, daysInMonth);
+        }
+        public static DateTime GetFirstDayOfWeek(this DateTime dateTime)
+        {
+            var monday = DateTime.UtcNow.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
+            return monday.GetStartOfDayDate();
         }
         public static DateTime GetFirstDayOfMonth(this DateTime dateTime)
         {

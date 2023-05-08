@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Playground\Pl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helper", "Helper\Helper.csproj", "{8799B637-8B49-49BA-8C0D-3A5AD618ABC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossComponentCommunication", "CrossComponentCommunication\CrossComponentCommunication.csproj", "{3726152A-1C74-432C-9B37-D2F299CCA62A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrossComponentCommunication", "CrossComponentCommunication\CrossComponentCommunication.csproj", "{3726152A-1C74-432C-9B37-D2F299CCA62A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

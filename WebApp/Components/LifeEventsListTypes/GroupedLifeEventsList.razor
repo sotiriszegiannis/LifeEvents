@@ -1,0 +1,67 @@
+﻿@inherits LifeEventsListBase
+<ul class="list-group">
+    @foreach (var lifeEventGroup in LifeEvents.GroupBy(p => p.Title).OrderByDescending(p => p.ToList(), new LifeEventGroupComparer()))
+    {
+        <li class="list-group-item">
+            <div class="row">
+                <div Class="col-12">
+                    <span style="font-size:xx-large">@lifeEventGroup.Max(p=>p.Title)</span>
+                    <div style="display:inline-block">
+                        @{
+                            var lifeEventGroupTags = lifeEventGroup.FirstOrDefault(p => p.Tags != null && p.Tags.Count > 0);
+                        }
+                        @if (lifeEventGroupTags != null)
+                        {
+                            <MudChipSet ReadOnly="true">
+                                @foreach (var tag in lifeEventGroupTags!.Tags)
+                                {
+                                    <MudChip Text="@tag.Name"></MudChip>
+                                }
+                            </MudChipSet>
+                        }
+                    </div>
+                    <MudSpacer />
+                    <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@GetDurationText(lifeEventGroup.Sum(p=>p.DurationInMinutes))</div>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    @foreach (var lifeEvent in lifeEventGroup.OrderByDescending(p => GetEventStartDate(p)))
+                    {
+                        <div class="row">
+                            <div class="col-md-2 col-6">
+                                <LifeEventTimeInfo Start="@GetEventStartDate(lifeEvent).ToIanaTimeZone(User.TimeZone)" Duration="@lifeEvent.DurationInMinutes"></LifeEventTimeInfo>
+                            </div>
+                            @if (lifeEventGroup.Count() > 1)
+                            {
+                                <div class="col-2">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteLifeEvent(lifeEvent)"></MudIconButton>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div>
+                @if (lifeEventGroup.Count() == 1)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteLifeEvent(lifeEventGroup.First())"></MudIconButton>
+                }
+            </div>
+        </li>
+    }
+</ul>
+
+@code {        
+    class LifeEventGroupComparer : IComparer<List<LifeEventRDTO>>
+    {
+        public int Compare(List<LifeEventRDTO> LifeEventsA, List<LifeEventRDTO> LifeEventsB)
+        {           
+            if (LifeEventsA.Max(p => p.DateCreated!.Value > LifeEventsB.Max(p => p.DateCreated!.Value)))
+                return 1;
+            else
+                return -1;
+        }
+    }
+}
