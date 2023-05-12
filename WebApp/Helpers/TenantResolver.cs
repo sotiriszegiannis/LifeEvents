@@ -1,30 +1,32 @@
 ﻿ using Domain;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace WebApp
 {
     public class TenantResolver : ITenantResolver
     {
-        private string TenantId;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public TenantResolver(IHttpContextAccessor httpContextAccessor)
+        public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+        private string TenantId;                
+        public TenantResolver(AuthenticationStateProvider authenticationStateProvider)
         {
-            _httpContextAccessor = httpContextAccessor;
-            TenantId = _httpContextAccessor?.HttpContext?.User?.Identity?.Name!;
-            Debug.WriteLine("*********************************TenantResolver instantiated through DI*****************");
+            AuthenticationStateProvider = authenticationStateProvider;
         }
-
         public string GetCurrentTenantId()
         {
-
-            //if (claim is null)
-            //    throw new UnauthorizedAccessException("Authentication failed");
-
-            //var tenant = _tenantRegistry.GetTenants().FirstOrDefault(t => t.Name == claim.Value);
-            //if (tenant is null)
-            //    throw new UnauthorizedAccessException($"Tenant '{claim.Value}' is not registered.");
-
+            if(TenantId == null)
+            {
+                var authState = AuthenticationStateProvider.GetAuthenticationStateAsync().Result;
+                var user = authState.User;
+                if (user.Identity is not null && user.Identity.IsAuthenticated)
+                {                    
+                    var claims = user.Claims;
+                    TenantId = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+                }
+            }
+            
             return TenantId!;
         }
 

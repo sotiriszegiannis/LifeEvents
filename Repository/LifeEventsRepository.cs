@@ -9,9 +9,11 @@ namespace Repository
     public class LifeEventsRepository : BaseRepository<LifeEvent>
     {
         
+        UsersRepository UsersRepository { get; set; }
         IMapper Mapper { get; set; }
-        public LifeEventsRepository(IDbContextFactory<AppDbContext> dbContextFactory, ITenantResolver tenantResolver, IMapper mapper) : base(dbContextFactory, tenantResolver) { 
+        public LifeEventsRepository(IDbContextFactory<AppDbContext> dbContextFactory, ITenantResolver tenantResolver, IMapper mapper,UsersRepository usersRepository) : base(dbContextFactory, tenantResolver) { 
             Mapper = mapper;
+            UsersRepository = usersRepository;
             base.RelationsEagerLoading = true;
         }
         protected override IQueryable<LifeEvent> LoadRelations(IQueryable<LifeEvent> dbSet)
@@ -45,11 +47,12 @@ namespace Repository
         public async Task<int> AddNew(LifeEventRDTO lifeEventDTO)
         {
             LifeEvent lifeEvent = new LifeEvent();
+            var timeZone=UsersRepository.Get().Result.TimeZone;
             if (lifeEvent.Id == 0)
             {
                 lifeEvent = new LifeEvent();
-                lifeEvent.From = (!lifeEventDTO.From.HasValue ? DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes) : lifeEventDTO.From.Value).ToUniversalTime();
-                lifeEvent.To = (!lifeEventDTO.To.HasValue ? lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes) : lifeEventDTO.To.Value).ToUniversalTime();
+                lifeEvent.From = (!lifeEventDTO.From.HasValue ? DateTime.UtcNow.AddMinutes(-lifeEventDTO.DurationInMinutes) : lifeEventDTO.From.Value).FromIanaTimeZone(timeZone);
+                lifeEvent.To = (!lifeEventDTO.To.HasValue ? lifeEvent.From.AddMinutes(lifeEventDTO.DurationInMinutes) : lifeEventDTO.To.Value).FromIanaTimeZone(timeZone);
                 lifeEvent.Title = lifeEventDTO.Title;
                 lifeEvent.Description = lifeEventDTO.Description;
                 lifeEvent.Location = lifeEventDTO.Location;
