@@ -38,6 +38,7 @@ public class Program
         builder.Services.AddScoped<UsersRepository>();
         builder.Services.AddScoped<LifeEventsRepository>();
         builder.Services.AddScoped<TagsRepository>();
+        builder.Services.AddScoped<Device>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

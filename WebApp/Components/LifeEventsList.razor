@@ -6,32 +6,35 @@
     <div class="card">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-5 col-12">
-                    <input type="radio" class="btn-check" name="options" id="today" autocomplete="off"
-                           @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.Today" checked>
-                    <label class="btn btn-secondary" for="today">Today</label>
+                @*<div class="col-md-5 col-12">
+                <input type="radio" class="btn-check" name="options" id="today" autocomplete="off"
+                @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.Today" checked>
+                <label class="btn btn-secondary" for="today">Today</label>
 
-                    <input type="radio" class="btn-check" name="options" id="thisWeek" autocomplete="off"
-                           @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.ThisWeek">
-                    <label class="btn btn-secondary" for="thisWeek">This week</label>
+                <input type="radio" class="btn-check" name="options" id="thisWeek" autocomplete="off"
+                @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.ThisWeek">
+                <label class="btn btn-secondary" for="thisWeek">This week</label>
 
-                    <input type="radio" class="btn-check" name="options" id="thisMonth" autocomplete="off"
-                           @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.ThisMonth">
-                    <label class="btn btn-secondary" for="thisMonth">This month</label>
-                </div>
+                <input type="radio" class="btn-check" name="options" id="thisMonth" autocomplete="off"
+                @onclick="()=>SelectedPeriodType=SelectedPeriodEnum.ThisMonth">
+                <label class="btn btn-secondary" for="thisMonth">This month</label>
+                </div>*@
                 @if (SelectedPeriodType == SelectedPeriodEnum.Today)
                 {
                     <div class="col-md-3 col-12">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleLeft" OnClick="()=>ChangeDate(true)"></MudIconButton>
-                        <h3 style="display:inline">@DateRange?.From?.ToString("MMMM dd")</h3>
+                        <h3 class="cursor-pointer" style="display:inline" @onclick="()=>SelectedDateComponent.Open()">@DateRange?.From?.ToString("MMMM dd")</h3>
+                        <div style="display:none">
+                            <MudDatePicker @bind-Date="SelectedDate" @ref="SelectedDateComponent" />
+                        </div>                        
                         @if (DateRange?.From?.DayOfYear < DateTime.UtcNow.DayOfYear)
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleRight" OnClick="()=>ChangeDate(false)"></MudIconButton>
-                        }                        
+                        }
                     </div>
-                }                
+                }
             </div>
-            
+
         </div>
     </div>
 </div>
@@ -49,6 +52,20 @@ else
 }
 
 @code {
+    MudDatePicker SelectedDateComponent { get; set; }
+    DateTime? _SelectedDate{ get; set; }
+    public DateTime? SelectedDate
+    {
+        get
+        {
+            return _SelectedDate;
+        }
+        set
+        {
+            _SelectedDate = value;
+            ChangeDate(value.Value);
+        }
+    }
     UserRDTO User { get; set; }
     WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
     SelectedPeriodEnum _SelectedPeriodType { get; set; } = SelectedPeriodEnum.Today;
@@ -99,9 +116,15 @@ else
     }
     void ChangeDate(bool goBack)
     {
-        int dayToGo = goBack ? -1 : 1;        
-        DateRange.From = DateRange.From?.AddDays(dayToGo).GetStartOfDayDate();
-        DateRange.To = DateRange.From?.GetEndOfDayDate();
+        int dayToGo = goBack ? -1 : 1;
+        var from = DateRange.From?.AddDays(dayToGo);
+        if (from.HasValue)
+            ChangeDate(from.Value);
+    }
+    void ChangeDate(DateTime date)
+    {
+        DateRange.From = date.GetStartOfDayDate();
+        DateRange.To = date.GetEndOfDayDate();
     }
     enum SelectedPeriodEnum
     {

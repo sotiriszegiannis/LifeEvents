@@ -1,13 +1,13 @@
 ﻿@inherits LifeEventsListBase
 <ul class="list-group">
-    @foreach (var lifeEvent in LifeEvents.OrderByDescending(p=>p.DateCreated!.Value))
+    @foreach (var lifeEvent in LifeEvents.OrderByDescending(p => p.DateCreated!.Value))
     {
         <li class="list-group-item">
             <div class="row">
                 <div Class="col-12">
                     <span style="font-size:xx-large">@lifeEvent.Title</span>
                     <div style="display:inline-block">
-                        @if (lifeEvent.Tags != null && lifeEvent.Tags.Count>0)
+                        @if (lifeEvent.Tags != null && lifeEvent.Tags.Count > 0)
                         {
                             <MudChipSet ReadOnly="true">
                                 @foreach (var tag in lifeEvent.Tags)
@@ -21,9 +21,12 @@
                         <LifeEventTimeInfo Start="@GetEventStartDate(lifeEvent).ToIanaTimeZone(User.TimeZone)" Duration="@lifeEvent.DurationInMinutes"></LifeEventTimeInfo>
                     </div>
                     <MudSpacer />
-                    <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@(new TimeSpan(0,lifeEvent.DurationInMinutes,0).GetTimeDurationDescription())</div>
+                    @if (lifeEvent.DurationInMinutes > 0)
+                    {
+                        <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@(new TimeSpan(0, lifeEvent.DurationInMinutes, 0).GetTimeDurationDescription())</div>
+                    }                    
                 </div>
-            </div>                        
+            </div>
             <div>
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="()=>DeleteLifeEvent(lifeEvent)"></MudIconButton>
             </div>

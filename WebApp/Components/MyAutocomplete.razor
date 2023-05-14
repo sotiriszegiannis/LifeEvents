@@ -1,7 +1,12 @@
-﻿<div class="mud-input-control mud-input-required mud-input-error mud-input-input-control">
+﻿@inject Device Device
+<div class="mud-input-control mud-input-required mud-input-error mud-input-input-control">
     <div class="mud-input-control-input-container">
         <div class="mud-input mud-input-text mud-input-underline mud-shrink">
             <input class="mud-input-slot mud-input-root mud-input-root-text" type="text" inputmode="text" maxlength="524288" @bind="@Text" @bind:event="oninput" @onkeydown="@Enter">
+            @if(IsMobile && (!Immediate.HasValue || !Immediate.Value))
+            {
+                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" @onclick="()=>{_TextChanged();}" />
+            }            
         </div>
         <label class="mud-input-label mud-input-label-animated mud-input-label-text mud-input-label-inputcontrol">@Label</label>
     </div>
@@ -52,10 +57,10 @@
         }
     }
     [Parameter]
-    public Action<ListItem<string, object>> TextChanged { get; set; }
-    //string TextValue { get; set; }
+    public Action<ListItem<string, object>> TextChanged { get; set; }    
     MudMenu MudMenu { get; set; }
     List<ListItem<string, object>> MenuItems = new List<ListItem<string, object>>();
+    bool IsMobile { get; set; }
     private List<ListItem<string, object>> GetMenuItems(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -63,9 +68,10 @@
         else
             return Items.Where(p => p.Text.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p).ToList();
     }
-    protected override Task OnInitializedAsync()
+    protected async override Task OnInitializedAsync()
     {
-        return base.OnInitializedAsync();
+        IsMobile = await Device.IsMobile();
+        await base.OnInitializedAsync();
     }
     void Enter(KeyboardEventArgs e)
     {

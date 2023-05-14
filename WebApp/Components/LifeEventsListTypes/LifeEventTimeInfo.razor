@@ -1,4 +1,4 @@
-﻿<span>@(Duration>0?"started at":"occured at")</span>
+﻿<span>@(Duration > 0 ? "started at" : "occured at")</span>
 <h5 style="display:inline-block;">
     <strong>@(Start.Day == DateTime.UtcNow.Day ? Start.ToString("HH:mm") : Start.ToString("MMMM dd"))</strong>
 </h5>
@@ -17,21 +17,26 @@
     public int Duration { get; set; }
     string GetDurationText(int durationInMinutes)
     {
-        if (durationInMinutes < 60)
+        if (durationInMinutes > 0)
         {
-            if (durationInMinutes > 0)
-                return $"{durationInMinutes}'";
+            if (durationInMinutes < 60)
+            {
+                if (durationInMinutes > 0)
+                    return $"{durationInMinutes}'";
+                else
+                    return "";
+            }
             else
-                return "";
+            {
+                var hours = durationInMinutes / 60;
+                var minutes = durationInMinutes % 60;
+                if (minutes > 0)
+                    return $"{hours}h {minutes}'";
+                else
+                    return $"{hours}h";
+            }
         }
         else
-        {
-            var hours = durationInMinutes / 60;
-            var minutes = durationInMinutes % 60;
-            if (minutes > 0)
-                return $"{hours}h {minutes}'";
-            else
-                return $"{hours}h";
-        }
+            return "";
     }
 }

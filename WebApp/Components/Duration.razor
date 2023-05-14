@@ -21,8 +21,8 @@
             }
             else if (SelectedOption == "Range")
             {
-                <MudTextField T="DateTime?" Format="s" Label="From" InputType="InputType.DateTimeLocal" @bind-Date="From" />
-                <MudTextField T="DateTime?" Format="s" Label="To" InputType="InputType.DateTimeLocal" @bind-Date="To" />
+                <MudTextField T="DateTime?" Format="s" Label="From" InputType="InputType.DateTimeLocal" @bind-Value="From" />
+                <MudTextField T="DateTime?" Format="s" Label="To" InputType="InputType.DateTimeLocal" @bind-Value="To" />
             }
         </div>
     </div>
@@ -42,26 +42,9 @@
 @code {
     WebApp.DateRange _DateRange { get; set; }
     [Parameter]
-    public WebApp.DateRange DateRange
-    {
-        get
-        {
-            return _DateRange;
-        }
-        set
-        {
-            if (value == null)
-                value = new WebApp.DateRange();
-            _DateRange = value;
-            if (value.From.HasValue && value.To.HasValue)
-            {
-                DurationInMinutes = (int)(value.To.Value.Subtract(value.From.Value).TotalMinutes);
-                SelectedOption = "Duration";
-            }
-        }
-    }
+    public WebApp.DateRange DateRange { get; set; }
     [Parameter]
-    public EventCallback<WebApp.DateRange> DateRangeChanged{ get; set; }
+    public EventCallback<WebApp.DateRange> DateRangeChanged { get; set; }
     DurationPicker DurationPicker { get; set; }
     UserRDTO User { get; set; }
     int DurationInMinutes
@@ -70,7 +53,7 @@
         {
             if (GetEventDateRange().From.HasValue && GetEventDateRange().To.HasValue)
             {
-                return (int)GetEventDateRange().To.Value.Subtract(GetEventDateRange().From.Value).TotalMinutes;
+                return (int)Math.Ceiling(GetEventDateRange().To.Value.Subtract(GetEventDateRange().From.Value).TotalMinutes);
             }
             else
                 return 0;
@@ -79,10 +62,10 @@
         {
             GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
             GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-value);
+            TriggerDateRangeChangedEvent();
         }
     }
-
-    TimeSpan? _StartTime = new TimeSpan(00, 00, 00);
+    TimeSpan? _StartTime { get; set; } = new TimeSpan(00, 00, 00);
     TimeSpan? StartTime
     {
         get
@@ -101,6 +84,7 @@
             TriggerDateRangeChangedEvent();
         }
     }
+    DateTime? _From { get; set; }
     DateTime? From
     {
         get
@@ -113,6 +97,7 @@
             TriggerDateRangeChangedEvent();
         }
     }
+    DateTime? _To { get; set; }
     DateTime? To
     {
         get
@@ -133,7 +118,7 @@
         GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
         GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-(int)mudChip.Value);
         DurationPicker.SetDuration((int)mudChip.Value);
-        TriggerDateRangeChangedEvent();
+        //TriggerDateRangeChangedEvent();
     }
     List<(int minutes, string label)>
         FixedDurations = new List<(int minutes, string label)>
@@ -144,9 +129,31 @@
         User = await UsersRepository.Get();
         await base.OnInitializedAsync();
     }
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        if (parameters.TryGetValue<WebApp.DateRange>(nameof(DateRange), out var dateRange))
+        {
+            DateRange = dateRange;
+            var durationInMinutes = 0;
+            if (dateRange != null && dateRange.From.HasValue && dateRange.To.HasValue)
+            {
+                durationInMinutes = (int)Math.Ceiling((dateRange.To.Value.Subtract(dateRange.From.Value).TotalMinutes));
+            }
+            else
+                durationInMinutes = 0;
+            if (DurationInMinutes != durationInMinutes)
+                DurationInMinutes = durationInMinutes;
+        }
+        return base.SetParametersAsync(parameters);
+    }
     void TriggerDateRangeChangedEvent()
     {
-        DateRangeChanged.InvokeAsync(GetEventDateRange());
+        var dateRange = GetEventDateRange();
+        DateRangeChanged.InvokeAsync(new WebApp.DateRange()
+            {
+                From = dateRange.From,
+                To = dateRange.To
+            });
     }
     string _SelectedOption { get; set; } = "Duration";
     string SelectedOption
@@ -165,13 +172,21 @@
                 case "StartAt":
                     MudTimePicker?.Open();
                     break;
+                case "Range":
+                    var range = GetEventDateRange();
+                    if (!range.From.HasValue)
+                    {
+                        range.From = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+                        range.To = range.From;
+                    }
+                    break;
             }
         }
     }
-        WebApp.DateRange GetEventDateRange()
+    WebApp.DateRange GetEventDateRange()
     {
-        if (DateRange == null)
-                DateRange = new WebApp.DateRange();
-        return DateRange;
+        if (_DateRange == null)
+            _DateRange = new WebApp.DateRange();
+        return _DateRange;
     }
 }

@@ -1,4 +1,5 @@
 ﻿@inherits EditorBase
+@inject UsersRepository UsersRepository
 @using System.Text.RegularExpressions
 @using System.ComponentModel.DataAnnotations
 @inject LifeEventsRepository LifeEventsRepository
@@ -11,7 +12,7 @@
                 @*<MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Title" />*@
                 <TagSelector @bind-Tags="Tags"></TagSelector>
                 <MudTextField T="string" Label="Description" @bind-Value="LifeEvent.Description" />
-                <Duration DateRange="DateRange"></Duration>
+                <Duration @bind-DateRange="DateRange"></Duration>
                 <MudTextField T="string" Label="Location" @bind-Value="LifeEvent.Location" />
             </MudForm>
         </MudPaper>
@@ -20,8 +21,9 @@
 
 
 @code {
+    UserRDTO User { get; set; }
     List<ListItem<int, object>> Tags { get; set; }
-        WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
+    WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
     bool success;
     string[] errors = { };
     MudForm form;
@@ -33,27 +35,36 @@
         await form.Validate();
         if (form.IsValid)
         {
-            LifeEvent.From = DateRange?.From;
-            LifeEvent.To = DateRange?.To;
-            LifeEvent.Tags = Tags?.Select(p => new TagRDTO()
-                {
-                    Id = p.Key,
-                    Name = p.Text
-                })
-            .ToList()!;
-            var id = await LifeEventsRepository.AddNew(LifeEvent);
-            if (id > 0)
-            {
-                result.EditorSaveResultType = EditorSaveResultTypeEnum.Saved;
-                CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent, new NewLifeEventBroadcastMessage(id));
+            if(DateRange==null)
+                DateRange = new WebApp.DateRange();            
+            LifeEvent.From = !DateRange.From.HasValue ? DateTime.UtcNow.ToIanaTimeZone(User.TimeZone):DateRange.From.Value;
+            LifeEvent.To = !DateRange.To.HasValue ? LifeEvent.From.Value:DateRange.To.Value;
+            if(LifeEvent.To.Value<LifeEvent.From.Value){
+                result.EditorSaveResultType= EditorSaveResultTypeEnum.ValidationErrors;                
             }
             else
-                result.EditorSaveResultType = EditorSaveResultTypeEnum.SaveError;
+            {
+                LifeEvent.Tags = Tags?.Select(p => new TagRDTO()
+                    {
+                        Id = p.Key,
+                        Name = p.Text
+                    })
+               .ToList()!;
+                var id = await LifeEventsRepository.AddNew(LifeEvent);
+                if (id > 0)
+                {
+                    result.EditorSaveResultType = EditorSaveResultTypeEnum.Saved;
+                    CrossComponentCommunication.Broadcast(BroadcastTypeEnum.NewLifeEvent, new NewLifeEventBroadcastMessage(id));
+                }
+                else
+                    result.EditorSaveResultType = EditorSaveResultTypeEnum.SaveError;
+            }            
         }
         else
             result.EditorSaveResultType = EditorSaveResultTypeEnum.ValidationErrors;
         return result;
     }
+    
     protected async override Task OnInitializedAsync()
     {
         ExistingEventTitles = (await LifeEventsRepository.GetAllTitles())
@@ -61,6 +72,7 @@
                                 .Select(p => p.OrderByDescending(x => x.id).FirstOrDefault())
                                 .Select(p => new ListItem<string, object>(p.id.ToString(), p.title))
                                 .ToList();
+        User = await UsersRepository.Get();
         await base.OnInitializedAsync();
     }
     async void EventTitleChanged(ListItem<string, object> listItem)
