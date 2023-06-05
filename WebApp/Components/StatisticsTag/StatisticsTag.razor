@@ -1,0 +1,79 @@
+﻿@inject UsersRepository UsersRepository
+@inject TagsRepository TagsRepository
+@inject DateFilters DateFilters
+@inject IMapper Mapper
+<MudMenu Fixed="true" Class="px-4 pt-4">
+    <ActivatorContent>
+        <div @onclick="()=>OnClick()">
+            <MudChip Text="@Tag.Name" OnClick="()=>OnClick()"></MudChip>
+        </div>        
+    </ActivatorContent>
+    <ChildContent>
+        <div style="padding:1em;">
+            <div style="margin-bottom:0.5em">
+                <h4 class="mt-1 mb-1">@Tag.Name</h4>
+                <p class="mb-0 text-muted">
+                    <span class="text-nowrap">Statistics of @UtcDay.ToString("MMMM yyyy")</span>
+                </p>
+            </div>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                <MudTabPanel Text="@UtcDay.ToString("dddd, dd")">
+                    <MudText>
+                        <StatisticsTagSummary TagSummary="Stats.DaySummary"></StatisticsTagSummary>
+                    </MudText>
+                </MudTabPanel>
+                <MudTabPanel Text="Week">
+                    <MudText>
+                        <StatisticsTagSummary TagSummary="Stats.WeekSummary"></StatisticsTagSummary>
+                    </MudText>
+                </MudTabPanel>
+                <MudTabPanel Text="Month">
+                    <MudText>
+                        <StatisticsTagSummary TagSummary="Stats.MonthSummary"></StatisticsTagSummary>
+                    </MudText>
+                </MudTabPanel>
+                <MudTabPanel Text="Total">
+                    <MudText>
+                        <StatisticsTagSummary TagSummary="Stats.TotalSummary" ShowFrom="true"></StatisticsTagSummary>
+                    </MudText>
+                </MudTabPanel>
+            </MudTabs>            
+        </div>
+    </ChildContent>
+</MudMenu>
+
+@code {
+    [Parameter]
+    public TagRDTO Tag { get; set; }
+    [Parameter]
+    public DateTime UtcDay { get; set; }
+    UserRDTO User { get; set; }
+    MudMenu mudMenu { get; set; }
+    MudChip TagMudChip { get; set; }
+    _Stats Stats { get; set; }
+    private async void OnClick()
+    {        
+        var dateFilters = DateFilters.Get(UtcDay);
+        var userDay = UtcDay.FromIanaTimeZone(User.TimeZone);
+        Stats = new _Stats()
+            {
+                DaySummary = Mapper.Map<TagSummaryRDTO, TagSummary>(await TagsRepository.GetSummary(Tag.Id, dateFilters.StartOfDay, dateFilters.EndOfDay, User)),
+                WeekSummary = Mapper.Map<TagSummaryRDTO, TagSummary>(await TagsRepository.GetSummary(Tag.Id, dateFilters.StartOfWeek, dateFilters.EndOfWeek, User)),
+                MonthSummary = Mapper.Map<TagSummaryRDTO, TagSummary>(await TagsRepository.GetSummary(Tag.Id, dateFilters.StartOfMonth, dateFilters.EndOfMonth, User)),
+                TotalSummary = Mapper.Map<TagSummaryRDTO, TagSummary>(await TagsRepository.GetSummary(Tag.Id, default(DateTime), dateFilters.EndOfMonth, User))
+            };
+    }
+    protected async override Task OnInitializedAsync()
+    {
+        User= await UsersRepository.Get();
+        await base.OnInitializedAsync();
+    }
+    public class _Stats
+    {
+        public TagSummary DaySummary { get; set; }
+        public TagSummary WeekSummary { get; set; }
+        public TagSummary MonthSummary { get; set; }
+        public TagSummary TotalSummary { get; set; }
+    }
+
+}

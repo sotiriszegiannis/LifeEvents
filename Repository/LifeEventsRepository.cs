@@ -26,13 +26,31 @@ namespace Repository
         {
             return base.Save(entity);
         }
-        public async Task<List<LifeEventRDTO>> GetAll(DateTime from,DateTime to)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="startedAt">a utc date</param>
+        /// <returns></returns>
+        public async Task<List<LifeEventRDTO>> GetAllForDay(DateTime startedAt)
         {
-            return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.From >= from && p.To <= to)!);
+            var userTimeZone = UsersRepository.Get().Result.TimeZone;
+            var endOfDay = startedAt.AddDays(1).GetEndOfDayDate().FromIanaTimeZone(userTimeZone);
+            return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.From >= startedAt && p.From <= endOfDay)!);
         }        
         public async Task<List<LifeEventRDTO>> GetAll()
         {
             return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAll()!);
+        }
+        public async Task<List<LifeEventRDTO>> GetAll(string filter)
+        {
+            filter= filter.ToLower().Trim();
+            // return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.Title.ToLower().Contains(filter)
+            //|| (!string.IsNullOrEmpty(p.Location) && p.Location.ToLower().Contains(filter))
+            //|| (!string.IsNullOrEmpty(p.Description) && p.Description.ToLower().Contains(filter))));
+            return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.Title.ToLower().Contains(filter)
+            || (!string.IsNullOrEmpty(p.Location) && p.Location.ToLower().Contains(filter))
+            || (!string.IsNullOrEmpty(p.Description) && p.Description.ToLower().Contains(filter))
+            || (p.Tags.Any(x => x.Name.ToLower().Contains(filter)))!));
         }
         public async Task<List<(string title,int id)>> GetAllTitles()
         {
@@ -57,7 +75,12 @@ namespace Repository
                 lifeEvent.Description = lifeEventDTO.Description;
                 lifeEvent.Location = lifeEventDTO.Location;
                 lifeEvent.DateCreated = DateTime.UtcNow;
-                lifeEvent.DateUpdated = DateTime.UtcNow;
+                lifeEvent.DateUpdated = DateTime.UtcNow;        
+                lifeEvent.MoneyTransaction = new MoneyTransaction()
+                {
+                    Amount = lifeEventDTO.MoneyTransaction.Amount,
+                    Type = lifeEventDTO.MoneyTransaction.Type
+                };
                 lifeEvent.Tags = lifeEventDTO.Tags?.Select(p => new Tag()
                 {
                     Id = p.Id,
@@ -84,6 +107,16 @@ namespace Repository
             toEntity.Tags = dbTags?.Where(p => fromEntity.Tags.Any(x => x.Name == p.Name)).ToList();
             if (toEntity.Tags == null)
                 toEntity.Tags = new List<Tag>();
+            if(fromEntity.MoneyTransaction!=null && fromEntity.MoneyTransaction.Amount > 0)
+            {
+                toEntity.MoneyTransaction = new MoneyTransaction()
+                {
+                    Amount = fromEntity.MoneyTransaction.Amount,
+                    Type = fromEntity.MoneyTransaction.Type,
+                    LifeEvent=toEntity,
+                    TenantId= TenantResolver.GetCurrentTenantId()
+                };
+            }            
             fromEntity.Tags?.ToList().ForEach(p =>
             {               
                 var existingTag = dbTags.FirstOrDefault(x => x.Name == p.Name);

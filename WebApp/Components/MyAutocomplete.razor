@@ -32,10 +32,16 @@
     /// </summary>
     [Parameter]
     public bool? Immediate { get; set; }
+    /// <summary>
+    /// if immediate is enabled, it will fire the TextChanged event after the specified delay.
+    /// The unit is seconds.
+    /// </summary>
+    [Parameter]
+    public float Delay { get; set; }
     [Parameter]
     public string Label { get; set; }
     [Parameter]
-    public List<ListItem<string, object>> Items { get; set; }
+    public List<ListItem<string, object>> Items { get; set; }    
     string _Text { get; set; }
     [Parameter]
     public string Text
@@ -81,11 +87,18 @@
         }
     }
     void _TextChanged(){
-        var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
+        Action fireEvent = () =>
+        {
+            var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
             if (existingItem != null)
                 SelectItem(existingItem);
             else
                 SelectItem(new ListItem<string, object>(Guid.NewGuid().ToString(), _Text));
+        };
+        if (Delay > 0)
+            Task.Delay((int)(Delay*1000)).ContinueWith(t => fireEvent());
+        else
+            fireEvent();
     }
     void SelectItem(ListItem<string, object> listItem)
     {

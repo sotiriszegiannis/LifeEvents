@@ -3,6 +3,7 @@ using Domain;
 using Helper;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using MudBlazor.Extensions;
 using Repository;
 
 namespace WebApp
@@ -24,14 +25,31 @@ namespace WebApp
             set
             {
                 _DateRange = value;
-                UpdateLifeEventsList();
+                ReloadLifeEventsList();
             }
-        }        
-        public List<LifeEventRDTO> LifeEvents { get; set; } = new List<LifeEventRDTO>();
+        }
+        string _Filter { get; set; }
+        [Parameter]
+        public string Filter
+        {
+            get
+            {
+                return _Filter;
+            }
+            set
+            {
+                if (value == null)
+                    _Filter = "";
+                else
+                    _Filter = value;
+                ReloadLifeEventsList();
+            }
+        }
+        public List<LifeEventRDTO> LifeEventsToDisplay { get; set; } = new List<LifeEventRDTO>();
         protected override async Task OnInitializedAsync()
         {
             User = await UsersRepository.Get();
-            UpdateLifeEventsList();
+            ReloadLifeEventsList();
             CrossComponentCommunication.ListenTo(BroadcastTypeEnum.NewLifeEvent, OnNewLifeEvent);
         }
         public async void OnNewLifeEvent(IBroadcastMessage message)
@@ -40,7 +58,8 @@ namespace WebApp
             {
                 var newLifeEventMessage = message as NewLifeEventBroadcastMessage;
                 var newRec = await LifeEventsRepository.Get((message as NewLifeEventBroadcastMessage).LifeEventId);
-                LifeEvents.Add(newRec);
+                if(newRec.From.Value.ToIanaTimeZone(User.TimeZone).Day==DateTime.UtcNow.ToIanaTimeZone(User.TimeZone).Day)
+                    LifeEventsToDisplay.Add(newRec);
                 StateHasChanged();
             }
         }
@@ -68,7 +87,7 @@ namespace WebApp
             if (await LifeEventsRepository.Delete(lifeEvent.Id!.Value))
             {
                 Snackbar.Add("Deleted", Severity.Success);
-                LifeEvents = LifeEvents.Where(p => p.Id != lifeEvent.Id).ToList();
+                LifeEventsToDisplay = LifeEventsToDisplay.Where(p => p.Id != lifeEvent.Id).ToList();
             }
             else
                 Snackbar.Add("An error occured!", Severity.Error);
@@ -76,15 +95,23 @@ namespace WebApp
         protected DateTime GetEventStartDate(LifeEventRDTO lifeEvent)
         {
             return lifeEvent.From.HasValue ? lifeEvent.From.Value : lifeEvent.DateCreated!.Value;
-        }        
-        async void UpdateLifeEventsList()
+        }     
+        async Task<List<LifeEventRDTO>> FilterLifeEventsList()
         {
-            if (User != null && DateRange!=null && DateRange.From.HasValue && DateRange.To.HasValue)
+            var filter = Filter.ToLower();
+            return await LifeEventsRepository.GetAll(filter);
+        }        
+        async Task ReloadLifeEventsList()
+        {
+            if (User != null && DateRange != null && DateRange.From.HasValue)
             {
-                LifeEvents = await LifeEventsRepository.GetAll(DateRange.From.Value.FromIanaTimeZone(User.TimeZone), DateRange.To.Value.FromIanaTimeZone(User.TimeZone));
+                if(string.IsNullOrEmpty(Filter))
+                    LifeEventsToDisplay = await LifeEventsRepository.GetAllForDay(DateRange.From.Value.FromIanaTimeZone(User.TimeZone));
+                else
+                    LifeEventsToDisplay = await FilterLifeEventsList();
                 StateHasChanged();
             }
-            
+
         }
     }
 }

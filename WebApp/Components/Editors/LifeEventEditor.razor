@@ -8,12 +8,26 @@
     <MudItem xs="12" sm="12">
         <MudPaper Class="pa-4">
             <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors" ReadOnly="false">
-                <MyAutocomplete Items="ExistingEventTitles" TextChanged="EventTitleChanged" Label="Title" Immediate="true"></MyAutocomplete>
-                @*<MudTextField T="string" Label="Title" Required="true" RequiredError="Title is required!" @bind-Value="LifeEventDTO.Title" />*@
-                <TagSelector @bind-Tags="Tags"></TagSelector>
-                <MudTextField T="string" Label="Description" @bind-Value="LifeEvent.Description" />
-                <Duration @bind-DateRange="DateRange"></Duration>
-                <MudTextField T="string" Label="Location" @bind-Value="LifeEvent.Location" />
+                <div class="row">
+                    <div class="col-md-8 col-xs-12">
+                        <MyAutocomplete Items="ExistingEventTitles" TextChanged="EventTitleChanged" Label="Title" Immediate="true"></MyAutocomplete>
+                        <TagSelector @bind-Tags="Tags"></TagSelector>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                        <MoneyEditor @bind-MoneyTransaction="MoneyTransaction"></MoneyEditor>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <Duration @bind-DateRange="DateRange"></Duration>
+                        <MudExpansionPanels>
+                            <MudExpansionPanel Text="more">
+                                <MudTextField T="string" Label="Notes" @bind-Value="LifeEvent.Description" />
+                                <MudTextField T="string" Label="Location" @bind-Value="LifeEvent.Location" />
+                            </MudExpansionPanel>
+                        </MudExpansionPanels>
+                    </div>
+                </div>
             </MudForm>
         </MudPaper>
     </MudItem>
@@ -21,6 +35,7 @@
 
 
 @code {
+    MoneyTransactionDTO MoneyTransaction { get; set; } = new MoneyTransactionDTO();
     UserRDTO User { get; set; }
     List<ListItem<int, object>> Tags { get; set; }
     WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
@@ -35,12 +50,18 @@
         await form.Validate();
         if (form.IsValid)
         {
-            if(DateRange==null)
-                DateRange = new WebApp.DateRange();            
-            LifeEvent.From = !DateRange.From.HasValue ? DateTime.UtcNow.ToIanaTimeZone(User.TimeZone):DateRange.From.Value;
-            LifeEvent.To = !DateRange.To.HasValue ? LifeEvent.From.Value:DateRange.To.Value;
-            if(LifeEvent.To.Value<LifeEvent.From.Value){
-                result.EditorSaveResultType= EditorSaveResultTypeEnum.ValidationErrors;                
+            if (DateRange == null)
+                DateRange = new WebApp.DateRange();
+            LifeEvent.From = !DateRange.From.HasValue ? DateTime.UtcNow.ToIanaTimeZone(User.TimeZone) : DateRange.From.Value;
+            LifeEvent.To = !DateRange.To.HasValue ? LifeEvent.From.Value : DateRange.To.Value;
+            LifeEvent.MoneyTransaction = new MoneyTransactionRDTO()
+                {
+                    Amount = MoneyTransaction.Amount,
+                    Type = MoneyTransaction.Type
+                };
+            if (LifeEvent.To.Value < LifeEvent.From.Value)
+            {
+                result.EditorSaveResultType = EditorSaveResultTypeEnum.ValidationErrors;
             }
             else
             {
@@ -58,13 +79,13 @@
                 }
                 else
                     result.EditorSaveResultType = EditorSaveResultTypeEnum.SaveError;
-            }            
+            }
         }
         else
             result.EditorSaveResultType = EditorSaveResultTypeEnum.ValidationErrors;
         return result;
     }
-    
+
     protected async override Task OnInitializedAsync()
     {
         ExistingEventTitles = (await LifeEventsRepository.GetAllTitles())
@@ -73,6 +94,11 @@
                                 .Select(p => new ListItem<string, object>(p.id.ToString(), p.title))
                                 .ToList();
         User = await UsersRepository.Get();
+        DateRange=new WebApp.DateRange()
+            {
+                From = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone),
+                To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone)
+            };
         await base.OnInitializedAsync();
     }
     async void EventTitleChanged(ListItem<string, object> listItem)

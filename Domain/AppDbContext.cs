@@ -11,6 +11,7 @@ namespace Domain
         public DbSet<LifeEvent> LifeEvents { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<MoneyTransaction> MoneyTransaction { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options, ITenantResolver tenantResolver) : base(options)
         {
             //ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -22,11 +23,18 @@ namespace Domain
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<User>().Property(e => e.TenantId).IsRequired();
             modelBuilder.Entity<Tag>().Property(e => e.TenantId).IsRequired();
+            modelBuilder.Entity<MoneyTransaction>().Property(e => e.TenantId).IsRequired();
             modelBuilder.Entity<LifeEvent>().Property(e => e.TenantId).IsRequired();
 
             modelBuilder.Entity<User>().HasQueryFilter(e => e.TenantId == (TenantResolver != null ? TenantResolver.GetCurrentTenantId() : ""));
             modelBuilder.Entity<Tag>().HasQueryFilter(e => e.TenantId == (TenantResolver != null ? TenantResolver.GetCurrentTenantId() : ""));
             modelBuilder.Entity<LifeEvent>().HasQueryFilter(e => e.TenantId == (TenantResolver != null ? TenantResolver.GetCurrentTenantId() : ""));
+            modelBuilder.Entity<MoneyTransaction>().HasQueryFilter(e => e.TenantId == (TenantResolver != null ? TenantResolver.GetCurrentTenantId() : ""));
+
+            modelBuilder.Entity<LifeEvent>()
+                        .HasOne(a => a.MoneyTransaction)
+                        .WithOne(b => b.LifeEvent)
+                        .HasForeignKey<MoneyTransaction>(b => b.LifeEventId);
         }
     }
 }

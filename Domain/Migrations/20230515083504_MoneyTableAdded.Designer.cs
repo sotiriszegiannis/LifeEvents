@@ -4,16 +4,19 @@ using Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Domain
+namespace WebApp.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230515083504_MoneyTableAdded")]
+    partial class MoneyTableAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,7 +69,7 @@ namespace Domain
                     b.ToTable("LifeEvents");
                 });
 
-            modelBuilder.Entity("Domain.MoneyTransaction", b =>
+            modelBuilder.Entity("Domain.Money", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -80,19 +83,19 @@ namespace Domain
                     b.Property<int>("LifeEventId")
                         .HasColumnType("int");
 
+                    b.Property<int>("MoneyType")
+                        .HasColumnType("int");
+
                     b.Property<string>("TenantId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("LifeEventId")
                         .IsUnique();
 
-                    b.ToTable("MoneyTransaction");
+                    b.ToTable("Money");
                 });
 
             modelBuilder.Entity("Domain.Tag", b =>
@@ -375,11 +378,11 @@ namespace Domain
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.MoneyTransaction", b =>
+            modelBuilder.Entity("Domain.Money", b =>
                 {
                     b.HasOne("Domain.LifeEvent", "LifeEvent")
-                        .WithOne("MoneyTransaction")
-                        .HasForeignKey("Domain.MoneyTransaction", "LifeEventId")
+                        .WithOne("Money")
+                        .HasForeignKey("Domain.Money", "LifeEventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -454,7 +457,7 @@ namespace Domain
 
             modelBuilder.Entity("Domain.LifeEvent", b =>
                 {
-                    b.Navigation("MoneyTransaction");
+                    b.Navigation("Money");
                 });
 #pragma warning restore 612, 618
         }

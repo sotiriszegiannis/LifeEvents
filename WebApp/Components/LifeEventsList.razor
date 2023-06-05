@@ -21,7 +21,7 @@
                 </div>*@
                 @if (SelectedPeriodType == SelectedPeriodEnum.Today)
                 {
-                    <div class="col-md-3 col-12">
+                    <div class="col-3">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleLeft" OnClick="()=>ChangeDate(true)"></MudIconButton>
                         <h3 class="cursor-pointer" style="display:inline" @onclick="()=>SelectedDateComponent.Open()">@DateRange?.From?.ToString("MMMM dd")</h3>
                         <div style="display:none">
@@ -31,6 +31,9 @@
                         {
                             <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleRight" OnClick="()=>ChangeDate(false)"></MudIconButton>
                         }
+                    </div>
+                    <div class="col-3">
+                        <MudTextField @bind-Value="KeyworkFilter" Label="search" Variant="Variant.Text" Immediate=true></MudTextField>
                     </div>
                 }
             </div>
@@ -44,11 +47,11 @@
 </MudRadioGroup>
 @if (_SelectedViewType == "Grouped")
 {
-    <GroupedLifeEventsList DateRange="DateRange"></GroupedLifeEventsList>
+    <GroupedLifeEventsList DateRange="DateRange" Filter="@KeyworkFilter"></GroupedLifeEventsList>
 }
 else
 {
-    <FlatLifeEventsList DateRange="DateRange"></FlatLifeEventsList>
+    <FlatLifeEventsList DateRange="DateRange" Filter="@KeyworkFilter"></FlatLifeEventsList>
 }
 
 @code {
@@ -65,9 +68,10 @@ else
             _SelectedDate = value;
             ChangeDate(value.Value);
         }
-    }
+    }    
     UserRDTO User { get; set; }
     WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
+    string KeyworkFilter { get; set; }
     SelectedPeriodEnum _SelectedPeriodType { get; set; } = SelectedPeriodEnum.Today;
     SelectedPeriodEnum SelectedPeriodType
     {
@@ -112,6 +116,7 @@ else
     {
         User = await UsersRepository.Get();
         SelectedPeriodType = SelectedPeriodEnum.Today;
+        DateRange.From= DateTime.UtcNow.GetStartOfDayDate();
         await base.OnInitializedAsync();
     }
     void ChangeDate(bool goBack)

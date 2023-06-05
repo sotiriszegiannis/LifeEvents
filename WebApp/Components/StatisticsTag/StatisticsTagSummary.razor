@@ -1,0 +1,77 @@
+﻿<div class="card">
+    <div class="card-body">
+        <div class="">            
+            <ul class="mb-0 list-inline">
+                <li class="list-inline-item me-3">
+                    <MudCard>
+                        <MudCardContent>
+                            <div style="display:flex">
+                                <MudIcon Icon="@Icons.Material.Filled.Adjust" Color="Color.Primary" />
+                                <span>x</span>
+                                <h5 class="mb-1">
+                                    @TagSummary.Occurences
+                                </h5>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>                    
+                </li>
+                @if(TagSummary.Minutes > 0)
+                {
+                    <li class="list-inline-item me-3">
+                        <MudCard>
+                            <MudCardContent>
+                                <div style="display:flex">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Color="Color.Info" />
+                                    <h5 class="mb-1">
+                                        @TagSummary.Minutes.GetMinutesDurationDescription()
+                                    </h5>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>                        
+                    </li>
+                }                
+                @if(TagSummary.Income > 0)
+                {
+                    <li class="list-inline-item me-3">
+                        <MudCard>
+                            <MudCardContent>
+                                <div style="display:flex">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Success" />
+                                    <h5 class="mb-1">
+                                        € +@TagSummary.Income
+                                    </h5>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    </li>
+                }                
+                @if (TagSummary.Expenses > 0)
+                {
+                    <li class="list-inline-item me-3">
+                        <MudCard>
+                            <MudCardContent>
+                                <div style="display:flex">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Error" />
+                                    <h5 class="mb-1">
+                                        € -@TagSummary.Expenses
+                                    </h5>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>                        
+                    </li>
+                }                
+            </ul>
+            @*@if (ShowFrom)
+            {
+                <div>@TagSummary.From.ToString("dddd, MMMM dd HH:mm");</div>
+            }*@
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TagSummary TagSummary { get; set; }
+    [Parameter]
+    public bool ShowFrom { get; set; }
+}

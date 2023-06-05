@@ -1,0 +1,31 @@
+﻿<span>@(Duration > 0 ? "started at" : "occured at")</span>
+<h5 style="display:inline-block;">
+    <strong>@GetTime()</strong>
+</h5>
+@if (Duration > 0)
+{
+    <span>for</span>
+    <h5 style="display:inline-block;">
+        <strong>@GetDurationText(Duration)</strong>
+    </h5>
+}
+
+@code {
+    [Inject]
+    public DateFilters DateFilters { get; set; }
+    [Parameter]
+    public DateTime Start { get; set; }
+    [Parameter]
+    public int Duration { get; set; }
+    string GetTime()
+    {
+        if (DateFilters.IsToday(Start))
+            return Start.ToString("HH:mm");
+        else
+            return Start.ToString("dddd, MMMM dd HH:mm");
+    }
+    string GetDurationText(int durationInMinutes)
+    {
+        return durationInMinutes.GetMinutesDurationDescription();
+    }
+}

@@ -1,11 +1,15 @@
 ﻿@inherits LifeEventsListBase
 <ul class="list-group">
-    @foreach (var lifeEventGroup in LifeEvents.GroupBy(p => p.Title).OrderByDescending(p => p.ToList(), new LifeEventGroupComparer()))
+    @foreach (var lifeEventGroup in LifeEventsToDisplay.GroupBy(p => p.Title).OrderByDescending(p => p.ToList(), new LifeEventGroupComparer()))
     {
         <li class="list-group-item">
             <div class="row">
                 <div Class="col-12">
-                    <span style="font-size:xx-large">@lifeEventGroup.Max(p=>p.Title)</span>
+                    <span style="font-size:xx-large;display:inline">@lifeEventGroup.Max(p=>p.Title)</span>
+                    @if (@lifeEventGroup.Count() > 1)
+                    {
+                        <span style="display:inline;margin-left:0.2em;">@string.Format("(x{0})",lifeEventGroup.Count())</span>
+                    }
                     <div style="display:inline-block">
                         @{
                             var lifeEventGroupTags = lifeEventGroup.FirstOrDefault(p => p.Tags != null && p.Tags.Count > 0);
@@ -15,7 +19,7 @@
                             <MudChipSet ReadOnly="true">
                                 @foreach (var tag in lifeEventGroupTags!.Tags)
                                 {
-                                    <MudChip Text="@tag.Name"></MudChip>
+                                    <StatisticsTag Tag="@tag" UtcDay="lifeEventGroup.FirstOrDefault().From.Value"></StatisticsTag>
                                 }
                             </MudChipSet>
                         }

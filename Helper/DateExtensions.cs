@@ -5,6 +5,10 @@ namespace Helper
 {
     public static class DateExtensions
     {
+        public static int GetTotalMinutes(this DateTime from,DateTime to)
+        {
+            return (int)Math.Ceiling(Math.Abs(to.Subtract(from).TotalMinutes));
+        }
         /// <summary>
         /// Converts a UTC time to a local time
         /// </summary>
@@ -90,6 +94,30 @@ namespace Helper
                 return DateTime.Now.ToString("ddMMyy_Hms") + str;
             else
                 return DateTime.Now.ToString("ddMMyy_Hms");
+        }
+        public static string GetMinutesDurationDescription(this int _minutes)
+        {
+            if (_minutes > 0)
+            {
+                if (_minutes < 60)
+                {
+                    if (_minutes > 0)
+                        return $"{_minutes}'";
+                    else
+                        return "";
+                }
+                else
+                {
+                    var hours = _minutes / 60;
+                    var minutes = _minutes % 60;
+                    if (minutes > 0)
+                        return $"{hours}h {minutes}'";
+                    else
+                        return $"{hours}h";
+                }
+            }
+            else
+                return "";
         }
         public static string GetTimeDurationDescription(this TimeSpan timeSpan)
         {
@@ -214,20 +242,30 @@ namespace Helper
             }
             else
                 return null;
+        }        
+        public static DateTime GetFirstDayOfWeek(this DateTime dateTime)
+        {
+            var dayOfWeek = (int)dateTime.DayOfWeek;
+            if(dayOfWeek == 0)
+            {
+                dayOfWeek = 7;
+            }
+            var monday = dateTime.AddDays(-dayOfWeek + (int)DayOfWeek.Monday);
+            return monday.GetStartOfDayDate();
+        }
+        public static DateTime GetLastDayOfWeek(this DateTime dateTime)
+        {
+            var sunday = dateTime.AddDays((7 - (int)dateTime.DayOfWeek)%7);
+            return sunday.GetEndOfDayDate();
+        }
+        public static DateTime GetFirstDayOfMonth(this DateTime dateTime)
+        {
+            return new DateTime(dateTime.Year, dateTime.Month, 1);
         }
         public static DateTime GetLastDayOfMonth(this DateTime dateTime)
         {
             var daysInMonth = DateTime.DaysInMonth(dateTime.Year, dateTime.Month);
             return new DateTime(dateTime.Year, dateTime.Month, daysInMonth);
-        }
-        public static DateTime GetFirstDayOfWeek(this DateTime dateTime)
-        {
-            var monday = DateTime.UtcNow.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
-            return monday.GetStartOfDayDate();
-        }
-        public static DateTime GetFirstDayOfMonth(this DateTime dateTime)
-        {
-            return new DateTime(dateTime.Year, dateTime.Month, 1);
         }
         public static int ToMinutes(this int hours)
         {

@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-WebApp-70dc89af-2931-42d3-b8f4-0cd11d3971a4</UserSecretsId>
     <Platforms>AnyCPU;x86</Platforms>
+    <Configurations>Debug;Release;DebugLiveDatabase</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

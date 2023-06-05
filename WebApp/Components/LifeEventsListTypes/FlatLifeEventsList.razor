@@ -1,6 +1,6 @@
 ﻿@inherits LifeEventsListBase
 <ul class="list-group">
-    @foreach (var lifeEvent in LifeEvents.OrderByDescending(p => p.DateCreated!.Value))
+    @foreach (var lifeEvent in LifeEventsToDisplay.OrderByDescending(p => p.DateCreated!.Value))
     {
         <li class="list-group-item">
             <div class="row">
@@ -12,7 +12,7 @@
                             <MudChipSet ReadOnly="true">
                                 @foreach (var tag in lifeEvent.Tags)
                                 {
-                                    <MudChip Text="@tag.Name"></MudChip>
+                                    <StatisticsTag Tag="@tag" UtcDay="lifeEvent.From.Value"></StatisticsTag>
                                 }
                             </MudChipSet>
                         }

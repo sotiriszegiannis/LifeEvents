@@ -1,0 +1,46 @@
+﻿@using System.Globalization
+@using Domain
+<MudNumericField Immediate="true" Label="amount" Format="N2" Culture="@CultureInfo.GetCultureInfo("en-GR")" T="float?" @bind-Value="Amount" HelperText="amount" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
+<MudRadioGroup @bind-SelectedOption="@TransactionType">
+    <MudRadio Option="@MoneyTransactionTypeEnum.Income.ToString()" Color="Color.Primary">Income</MudRadio>
+    <MudRadio Option="@MoneyTransactionTypeEnum.Expense.ToString()">Expense</MudRadio>
+</MudRadioGroup>
+@code {
+    [Parameter]
+    public MoneyTransactionDTO MoneyTransaction { get; set; } = new MoneyTransactionDTO();
+    [Parameter]
+    public EventCallback<MoneyTransactionDTO> MoneyTransactionChanged { get; set; }    
+    float? Amount
+    {
+        get
+        {
+            return MoneyTransaction.Amount;
+        }
+        set
+        {
+            MoneyTransaction.Amount = value.HasValue?value.Value:0;
+            InvokeEvent();
+        }
+    }
+    string _TransactionType { get; set; } = MoneyTransactionTypeEnum.Income.ToString();
+    public string TransactionType
+    {
+        get
+        {
+            return _TransactionType;
+        }
+        set
+        {
+            _TransactionType = value;
+            InvokeEvent();
+        }
+    }
+    async void InvokeEvent()
+    {
+        await MoneyTransactionChanged.InvokeAsync(new MoneyTransactionDTO()
+            {
+                Amount = MoneyTransaction.Amount,
+                Type = _TransactionType == MoneyTransactionTypeEnum.Income.ToString() ? MoneyTransactionTypeEnum.Income : MoneyTransactionTypeEnum.Expense
+            });
+    }
+}

@@ -20,7 +20,12 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        var connectionString = string.Empty;
+#if DEBUGLIVEDATABASE
+        connectionString = @"Server=tcp:lifeevents-sql-server.database.windows.net,1433;Initial Catalog=LifeEvents;Persist Security Info=False;User ID=lifeevents;Password=L13fEvEnts!@&&66--;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+#else
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connectionstring 'DefaultConnection' not found.");
+#endif
         builder.Services.AddDbContextFactory<AppDbContext>(options =>
         {
             options.UseSqlServer(connectionString, p => p.MigrationsAssembly("Domain"));
@@ -37,8 +42,9 @@ public class Program
         builder.Services.AddScoped(typeof(CrossComponentCommunication.CrossComponentCommunication));
         builder.Services.AddScoped<UsersRepository>();
         builder.Services.AddScoped<LifeEventsRepository>();
-        builder.Services.AddScoped<TagsRepository>();
+        builder.Services.AddScoped<TagsRepository>();        
         builder.Services.AddScoped<Device>();
+        builder.Services.AddScoped<DateFilters>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

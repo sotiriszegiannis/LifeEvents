@@ -53,16 +53,19 @@
         {
             if (GetEventDateRange().From.HasValue && GetEventDateRange().To.HasValue)
             {
-                return (int)Math.Ceiling(GetEventDateRange().To.Value.Subtract(GetEventDateRange().From.Value).TotalMinutes);
+                return GetEventDateRange().From.Value.GetTotalMinutes(GetEventDateRange().To.Value);                
             }
             else
                 return 0;
         }
         set
         {
-            GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
-            GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-value);
-            TriggerDateRangeChangedEvent();
+            if (User != null)
+            {
+                GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+                GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-value);
+                TriggerDateRangeChangedEvent();
+            }
         }
     }
     TimeSpan? _StartTime { get; set; } = new TimeSpan(00, 00, 00);
@@ -136,8 +139,8 @@
             DateRange = dateRange;
             var durationInMinutes = 0;
             if (dateRange != null && dateRange.From.HasValue && dateRange.To.HasValue)
-            {
-                durationInMinutes = (int)Math.Ceiling((dateRange.To.Value.Subtract(dateRange.From.Value).TotalMinutes));
+            {                
+                durationInMinutes = dateRange.To.Value.GetTotalMinutes(dateRange.From.Value);
             }
             else
                 durationInMinutes = 0;
