@@ -122,11 +122,12 @@
     {
         if (LifeEvent != null)
         {
-            DateRange.From = lifeEvent.From;
-            DateRange.To = lifeEvent.To;
+            var minutes=(lifeEvent.To - lifeEvent.From).Value.TotalMinutes;
+            DateRange.From = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+            DateRange.To = DateRange.From.Value.AddMinutes(minutes);
             Tags = lifeEvent.Tags?.Select(p => new ListItem<int, object>(p.Id, p.Name)).ToList();
             LifeEvent.Title = lifeEvent.Title;
-            LifeEvent.Description = lifeEvent.Description;
+            //LifeEvent.Description = lifeEvent.Description;
             LifeEvent.Location = lifeEvent.Location;
             StateHasChanged();
         }
