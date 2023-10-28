@@ -21,7 +21,7 @@ namespace Repository
                 var utcFrom = from.FromIanaTimeZone(user.TimeZone);
                 var utcTo = to.FromIanaTimeZone(user.TimeZone);
                 var lEvents = (db as AppDbContext).LifeEvents
-                                .Where(p => p.User.Id == user.Id && p.From >= utcFrom && p.To <= utcTo)
+                                .Where(p => p.User.Id == user.Id && p.From >= utcFrom && p.To <= utcTo && p.MoneyTransaction!=null)
                                 .Select(p => new { p.MoneyTransaction, p })
                                 .ToList();
                 return lEvents.Select(p => new MoneyTransactionRDTO()
