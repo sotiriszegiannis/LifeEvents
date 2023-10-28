@@ -1,14 +1,9 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Areas.Identity;
-using WebApp.Data;
 using MudBlazor.Services;
 using Repository;
-using CrossComponentCommunication;
 using Domain;
 
 namespace WebApp;
@@ -29,7 +24,7 @@ public class Program
         builder.Services.AddDbContextFactory<AppDbContext>(options =>
         {
             options.UseSqlServer(connectionString, p => p.MigrationsAssembly("Domain"));
-        },ServiceLifetime.Scoped);
+        }, ServiceLifetime.Scoped);
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
         builder.Services.AddMudServices();
         builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
@@ -42,7 +37,8 @@ public class Program
         builder.Services.AddScoped(typeof(CrossComponentCommunication.CrossComponentCommunication));
         builder.Services.AddScoped<UsersRepository>();
         builder.Services.AddScoped<LifeEventsRepository>();
-        builder.Services.AddScoped<TagsRepository>();        
+        builder.Services.AddScoped<MoneyRepository>();
+        builder.Services.AddScoped<TagsRepository>();
         builder.Services.AddScoped<Device>();
         builder.Services.AddScoped<DateFilters>();
         var app = builder.Build();

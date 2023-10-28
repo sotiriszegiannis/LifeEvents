@@ -4,7 +4,6 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @using System.Security.Claims
-
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -13,6 +12,7 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => PagesDrawerToggle())" />
         <MudSpacer />
+        <MoneyTransactions/>
         <MudIconButton Icon="@Icons.Material.Outlined.AddCircle" Color="Color.Inherit" Style="Color:white" OnClick="()=>ShowLifeEventEditor()"/>
         <MudMenu AnchorOrigin="@Origin.BottomRight" TransformOrigin="@Origin.BottomRight" Style="width:fit-content">
             <ActivatorContent>

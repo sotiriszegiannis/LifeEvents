@@ -9,5 +9,6 @@ namespace Repository
         public int Id { get; set; }
         public float Amount { get; set; }
         public MoneyTransactionTypeEnum Type { get; set; }
+        public DateTime Date { get; set; }
     }
 }

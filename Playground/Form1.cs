@@ -36,6 +36,7 @@ namespace Playground
             var info=TimeZoneInfo.FindSystemTimeZoneById("Europe/Athens");
 
             InitializeComponent();
+            new Parent();
         }
     }
 
@@ -45,6 +46,14 @@ namespace Playground
         public void Save()
         {
             AChild.Save();
+        }
+        public PrivateChild CreateEmptyChild()
+        {
+            return new PrivateChild();
+        }
+        public class PrivateChild
+        {
+            public int MyProperty { get; set; }
         }
     }
     public interface IChild
