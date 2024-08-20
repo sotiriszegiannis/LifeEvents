@@ -52,7 +52,7 @@
         if (Transactions != null && Transactions.Count > 0)
         {
             Income = (int)Transactions.Where(x => x != null && x.Type == Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
-            Expenses = (int)Transactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
+            Expenses = (int)Transactions.Where(x => x != null && x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
         }
         else
         {
