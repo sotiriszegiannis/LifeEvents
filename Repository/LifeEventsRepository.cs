@@ -19,7 +19,8 @@ namespace Repository
         protected override IQueryable<LifeEvent> LoadRelations(IQueryable<LifeEvent> dbSet)
         {
             return dbSet
-                    .Include(p => p.Tags);
+                    .Include(p => p.Tags)
+                    .Include(p => p.MoneyTransaction);
         }
         [Obsolete("Cannot save directly a LifeEvent entity", true)]
         public Task<int> Save(LifeEvent entity)
@@ -44,9 +45,6 @@ namespace Repository
         public async Task<List<LifeEventRDTO>> GetAll(string filter)
         {
             filter= filter.ToLower().Trim();
-            // return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.Title.ToLower().Contains(filter)
-            //|| (!string.IsNullOrEmpty(p.Location) && p.Location.ToLower().Contains(filter))
-            //|| (!string.IsNullOrEmpty(p.Description) && p.Description.ToLower().Contains(filter))));
             return Mapper.Map<List<LifeEvent>, List<LifeEventRDTO>>(await base.GetAllWithCriteria(p => p.Title.ToLower().Contains(filter)
             || (!string.IsNullOrEmpty(p.Location) && p.Location.ToLower().Contains(filter))
             || (!string.IsNullOrEmpty(p.Description) && p.Description.ToLower().Contains(filter))

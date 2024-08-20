@@ -1,11 +1,11 @@
 ﻿@inject UsersRepository UsersRepository
 @inject MoneyRepository MoneyRepository
 <div>
-    <div class="d-flex flex-row mb-3">
+    <div class="d-flex flex-row">
         @if (Income > 0)
         {
-            <div class="p-2">
-                <li class="list-inline-item me-3">
+            <div class="">
+                <li class="list-inline-item">
                     <div style="display:flex">
                         <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Success" />
                         <h5 class="mb-1">
@@ -15,10 +15,10 @@
                 </li>
             </div>
         }
-        <div class="p-2">
+        <div class="">
             @if (Expenses > 0)
             {
-                <li class="list-inline-item me-3">
+                <li class="list-inline-item">
                     <div style="display:flex">
                         <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Error" />
                         <h5 class="mb-1">
@@ -32,19 +32,36 @@
 </div>
 
 @code {
-    [Parameter]
-    public WebApp.DateRange DateRange { get; set; }
-    protected async override Task OnInitializedAsync()
-    {
-        var User = await UsersRepository.Get();
-        var from = DateTime.UtcNow.GetFirstDayOfMonth().ToIanaTimeZone(User.TimeZone);
-        var to = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
-        var allTransactions = await MoneyRepository.GetAll(from, to, User);
-        Income = (int)allTransactions.Where(x =>x.Type==Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
-        Expenses = (int)allTransactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
-        await base.OnInitializedAsync();
-    } 
     int Income { get; set; }
     int Expenses { get; set; }
-
+    [Parameter]
+    public List<Repository.MoneyTransactionRDTO> Transactions { get; set; }
+    protected async override Task OnInitializedAsync()
+    {
+        await UpdateUI();
+        await base.OnInitializedAsync();
+    } 
+    protected override async Task OnParametersSetAsync()
+    {
+        await UpdateUI();
+        await base.OnParametersSetAsync();
+        // Update your UI here
+    }
+    private async Task UpdateUI()
+    {
+        if (Transactions != null && Transactions.Count > 0)
+        {
+            Income = (int)Transactions.Where(x => x != null && x.Type == Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
+            Expenses = (int)Transactions.Where(x => x != null && x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
+        }
+        else
+        {
+            var User = await UsersRepository.Get();
+            var from = DateTime.UtcNow.GetFirstDayOfMonth().ToIanaTimeZone(User.TimeZone);
+            var to = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
+            var allTransactions = await MoneyRepository.GetAll(from, to, User);
+            Income = (int)allTransactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
+            Expenses = (int)allTransactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
+        }
+    }
 }

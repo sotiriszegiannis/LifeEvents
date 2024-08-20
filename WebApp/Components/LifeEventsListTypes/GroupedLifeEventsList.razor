@@ -5,28 +5,33 @@
         <li class="list-group-item">
             <div class="row">
                 <div Class="col-12">
-                    <span style="font-size:xx-large;display:inline">@lifeEventGroup.Max(p=>p.Title)</span>
-                    @if (@lifeEventGroup.Count() > 1)
-                    {
-                        <span style="display:inline;margin-left:0.2em;">@string.Format("(x{0})",lifeEventGroup.Count())</span>
-                    }
-                    <div style="display:inline-block">
-                        @{
-                            var lifeEventGroupTags = lifeEventGroup.FirstOrDefault(p => p.Tags != null && p.Tags.Count > 0);
-                        }
-                        @if (lifeEventGroupTags != null)
-                        {
-                            <MudChipSet ReadOnly="true">
-                                @foreach (var tag in lifeEventGroupTags!.Tags)
-                                {
-                                    <StatisticsTag Tag="@tag" UtcDay="lifeEventGroup.FirstOrDefault().From.Value"></StatisticsTag>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <div>
+                            <span style="font-size:xx-large;display:inline">@lifeEventGroup.Max(p => p.Title)</span>
+                            @if (@lifeEventGroup.Count() > 1)
+                            {
+                                <span style="display:inline;margin-left:0.2em;">@string.Format("(x{0})", lifeEventGroup.Count())</span>
+                            }
+                            <div style="display:inline-block">
+                                @{
+                                    var lifeEventGroupTags = lifeEventGroup.FirstOrDefault(p => p.Tags != null && p.Tags.Count > 0);
                                 }
-                            </MudChipSet>
-                        }
+                                @if (lifeEventGroupTags != null)
+                                {
+                                    <MudChipSet ReadOnly="true">
+                                        @foreach (var tag in lifeEventGroupTags!.Tags)
+                                        {
+                                            <StatisticsTag Tag="@tag" UtcDay="lifeEventGroup.FirstOrDefault().From.Value"></StatisticsTag>
+                                        }
+                                    </MudChipSet>
+                                }
+                            </div>
+                        </div>
+                        <div style="min-width:7.8em">
+                            <MoneyTransactions Transactions="lifeEventGroup.Select(p=>p.MoneyTransaction).ToList()"></MoneyTransactions>
+                            <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@GetDurationText(lifeEventGroup.Where(p => p.DurationInMinutes > 1).Sum(p => p.DurationInMinutes))</div>
+                        </div>
                     </div>
-                    <MudSpacer />
-                    <div style="display:inline-block;float:right;font-size:xx-large;color: darkgoldenrod;">@GetDurationText(lifeEventGroup.Sum(p=>p.DurationInMinutes))</div>
-
                 </div>
             </div>
             <div class="row">
