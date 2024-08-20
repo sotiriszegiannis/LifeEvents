@@ -32,27 +32,36 @@
 </div>
 
 @code {
+    int Income { get; set; }
+    int Expenses { get; set; }
     [Parameter]
     public List<Repository.MoneyTransactionRDTO> Transactions { get; set; }
     protected async override Task OnInitializedAsync()
     {
-        if(Transactions!=null && Transactions.Count>0)
-		{
-			Income = (int)Transactions.Where(x => x!=null && x.Type == Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
-			Expenses = (int)Transactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
-		}
-		else
-		{
+        await UpdateUI();
+        await base.OnInitializedAsync();
+    } 
+    protected override async Task OnParametersSetAsync()
+    {
+        await UpdateUI();
+        await base.OnParametersSetAsync();
+        // Update your UI here
+    }
+    private async Task UpdateUI()
+    {
+        if (Transactions != null && Transactions.Count > 0)
+        {
+            Income = (int)Transactions.Where(x => x != null && x.Type == Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
+            Expenses = (int)Transactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
+        }
+        else
+        {
             var User = await UsersRepository.Get();
             var from = DateTime.UtcNow.GetFirstDayOfMonth().ToIanaTimeZone(User.TimeZone);
             var to = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
             var allTransactions = await MoneyRepository.GetAll(from, to, User);
             Income = (int)allTransactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Income).Sum(x => x.Amount);
             Expenses = (int)allTransactions.Where(x => x.Type == Domain.MoneyTransactionTypeEnum.Expense).Sum(x => x.Amount);
-		}
-        await base.OnInitializedAsync();
-    } 
-    int Income { get; set; }
-    int Expenses { get; set; }
-
+        }
+    }
 }
