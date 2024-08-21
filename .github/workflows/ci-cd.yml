@@ -36,7 +36,7 @@ jobs:
 
     # Deployment Step
     - name: Deploy to VPS
-      run: scp -r ./publish/* life_event_git_user@149.102.141.242:c:\inetpub\wwwroot\LifeEvents
+      run: scp -v -r ./publish/* life_event_git_user@149.102.141.242:c:\inetpub\wwwroot\LifeEvents
     - name: Deploy to VPS
       run: |
         echo "Deploying to VPS..."
