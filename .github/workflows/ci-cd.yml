@@ -2,12 +2,10 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
-  build:
+  deploy-to-contabo-windows-vps:
     runs-on: windows-latest
 
     steps:
@@ -31,9 +29,14 @@ jobs:
     - name: Publish the project
       run: dotnet publish -c Release -o publish
 
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.CONTABO_WINDOWS_VPS_SSH_KEY }}
+
+    # Deployment Step
+    - name: Deploy to VPS
+      run: scp -r ./publish/* life_event_git_user@149.102.141.242:c:\inetpub\wwwroot\LifeEvents
     - name: Deploy to VPS
       run: |
         echo "Deploying to VPS..."
-        # Here you would include your script to copy the files to your VPS and restart services if needed
-        # Example: scp -r ./publish/* your-vps-user@your-vps-ip:/path/to/deployment/folder
-        # And restart your IIS or service if necessary
