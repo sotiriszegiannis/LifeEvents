@@ -29,6 +29,18 @@ jobs:
     - name: Publish Project
       run: dotnet publish ./WebApp/WebApp.csproj -c Release -o ./output
 
+    - name: Stop IIS Site
+      run: |
+        Import-Module WebAdministration
+        Stop-WebSite -Name "LifeEvents"
+      shell: pwsh
+    
     - name: Deploy Files to IIS
       run: |
         xcopy /s /e /y ".\output" "C:\inetpub\wwwroot\LifeEvents"
+
+    - name: Start IIS Site
+      run: |
+        Import-Module WebAdministration
+        Start-WebSite -Name "LifeEvents"
+      shell: pwsh
