@@ -33,7 +33,7 @@ jobs:
       run: |
         Import-Module WebAdministration
         Stop-WebSite -Name "LifeEvents"
-      shell: pwsh
+      shell: powershell
     
     - name: Deploy Files to IIS
       run: |
@@ -43,4 +43,4 @@ jobs:
       run: |
         Import-Module WebAdministration
         Start-WebSite -Name "LifeEvents"
-      shell: pwsh
+      shell: powershell
