@@ -26,16 +26,8 @@ jobs:
     #- name: Run tests (if any)
     #  run: dotnet test --no-restore --verbosity normal
 
-    - name: Publish the project
-      run: dotnet publish -c Release -o publish
-
-    - name: Deploy Files to server
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: 149.102.141.242
-        username: life_event_git_user
-        key: ${{ secrets.CONTABO_WINDOWS_VPS_SSH_KEY }}
-        overwrite: true
-        source: "./publish/*"
-        target: c:\inetpub\wwwroot\LifeEvents
-        command: "-v"
+    - name: Publish to Web Deploy Package
+      run: dotnet publish -c Release -o ./output /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageLocation=./output/LifeEventsApp.zip
+      
+    - name: Deploy to IIS using Web Deploy
+      run: msdeploy.exe -verb:sync -source:package='./output/LifeEventsApp.zip' -dest:auto,computerName='https://149.102.141.242:8172/msdeploy.axd?site=LifeEvents',userName='life_event_git_user',password='{{ secrets.life_events_git_user_pwd }}',authtype='Basic' -allowUntrusted=true
