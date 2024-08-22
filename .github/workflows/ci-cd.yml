@@ -27,7 +27,7 @@ jobs:
     #  run: dotnet test --no-restore --verbosity normal
 
     - name: Publish to Web Deploy Package
-      run: dotnet publish -c Release -o ./output /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageLocation=./output/LifeEventsApp.zip
+      run: dotnet publish ./WebApp/WebApp.csproj -c Release /p:WebPublishMethod=Package /p:PackageLocation=./output/LifeEventsApp.zip
       
     - name: Deploy to IIS using Web Deploy
       run: msdeploy.exe -verb:sync -source:package='./output/LifeEventsApp.zip' -dest:auto,computerName='https://149.102.141.242:8172/msdeploy.axd?site=LifeEvents',userName='life_event_git_user',password='{{ secrets.life_events_git_user_pwd }}',authtype='Basic' -allowUntrusted=true
