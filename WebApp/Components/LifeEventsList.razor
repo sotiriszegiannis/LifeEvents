@@ -33,7 +33,7 @@
                         }
                     </div>
                     <div class="col-3">
-                        <MudTextField @bind-Value="KeyworkFilter" Label="search" Variant="Variant.Text" Immediate=true></MudTextField>
+                        <MudTextField @bind-Value="KeyworkFilter" Label="search" Variant="Variant.Text" DebounceInterval="1000"></MudTextField>
                     </div>
                 }
             </div>
@@ -73,6 +73,7 @@ else
     UserRDTO User { get; set; }
     WebApp.DateRange DateRange { get; set; } = new WebApp.DateRange();
     string KeyworkFilter { get; set; }
+    string KeyworkFilter2 { get; set; }
     SelectedPeriodEnum _SelectedPeriodType { get; set; } = SelectedPeriodEnum.Today;
     SelectedPeriodEnum SelectedPeriodType
     {
