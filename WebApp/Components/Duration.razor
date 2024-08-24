@@ -2,10 +2,10 @@
 <div>
     <div class="row">
         <MudForm>
-            <MudRadioGroup @bind-SelectedOption="@SelectedOption">
-                <MudRadio Option="@("Duration")" Color="Color.Primary">Duration</MudRadio>
-                <MudRadio Option="@("StartAt")" Color="Color.Secondary">Start at</MudRadio>
-                <MudRadio Option="@("Range")">Range</MudRadio>
+            <MudRadioGroup T="string" @bind-Value="@SelectedOption">
+                <MudRadio T="string" Value="@("Duration")" Color="Color.Primary">Duration</MudRadio>
+                <MudRadio T="string" Value="@("StartAt")" Color="Color.Secondary">Start at</MudRadio>
+                <MudRadio T="string" Value="@("Range")">Range</MudRadio>
             </MudRadioGroup>
         </MudForm>
     </div>
@@ -28,10 +28,10 @@
     </div>
     <div class="row">
         <div class="col-12">
-            <MudChipSet Filter="true" SelectedChipChanged="SelectedFixedDurationChanged" @ref="FixedDurationsSet">
+            <MudChipSet T="int" Filter="true" SelectedValueChanged="SelectedFixedDurationChanged" @ref="FixedDurationsSet" CheckMark>
                 @foreach (var item in FixedDurations)
                 {
-                    <MudChip Text="grey" Value="item.minutes">@item.label</MudChip>
+                    <MudChip T="int" Text="grey" Value="item.minutes">@item.label</MudChip>
                 }
             </MudChipSet>
         </div>
@@ -114,13 +114,13 @@
         }
     }
     MudTimePicker MudTimePicker { get; set; }
-    MudChipSet FixedDurationsSet { get; set; }
-    MudChip SelectedFixedDuration { get; set; }
-    void SelectedFixedDurationChanged(MudChip mudChip)
+    MudChipSet<int> FixedDurationsSet { get; set; }
+    MudChip<int> SelectedFixedDuration { get; set; }
+    void SelectedFixedDurationChanged(int mudChipValue)
     {
         GetEventDateRange().To = DateTime.UtcNow.ToIanaTimeZone(User.TimeZone);
-        GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-(int)mudChip.Value);
-        DurationPicker.SetDuration((int)mudChip.Value);
+        GetEventDateRange().From = GetEventDateRange().To.Value.AddMinutes(-(int)mudChipValue);
+        DurationPicker.SetDuration((int)mudChipValue);
         //TriggerDateRangeChangedEvent();
     }
     List<(int minutes, string label)>
@@ -168,12 +168,12 @@
         set
         {
             SelectedFixedDuration = null;
-            FixedDurationsSet.SelectedChip = null;
+            FixedDurationsSet.SelectedValue = 0;
             _SelectedOption = value;
             switch (_SelectedOption)
             {
                 case "StartAt":
-                    MudTimePicker?.Open();
+                    MudTimePicker?.OpenAsync();
                     break;
                 case "Range":
                     var range = GetEventDateRange();

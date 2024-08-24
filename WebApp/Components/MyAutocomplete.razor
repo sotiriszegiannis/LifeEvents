@@ -1,111 +1,141 @@
 ﻿@inject Device Device
 <div class="mud-input-control mud-input-required mud-input-error mud-input-input-control">
-    <div class="mud-input-control-input-container">
-        <div class="mud-input mud-input-text mud-input-underline mud-shrink">
-            <input class="mud-input-slot mud-input-root mud-input-root-text" type="text" inputmode="text" maxlength="524288" @bind="@Text" @bind:event="oninput" @onkeydown="@Enter">
-            @if(IsMobile && (!Immediate.HasValue || !Immediate.Value))
-            {
-                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" @onclick="()=>{_TextChanged();}" />
-            }            
-        </div>
-        <label class="mud-input-label mud-input-label-animated mud-input-label-text mud-input-label-inputcontrol">@Label</label>
-    </div>
+	<div class="mud-input-control-input-container">
+		<div class="mud-input mud-input-text mud-input-underline mud-shrink">
+			<input class="mud-input-slot mud-input-root mud-input-root-text" type="text" inputmode="text" maxlength="524288" @bind="@Text" @bind:event="oninput" @onkeydown="@Enter">
+			@if (IsMobile && (!Immediate.HasValue || !Immediate.Value))
+			{
+				<MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" @onclick="()=>{_TextChanged();}" />
+			}
+		</div>
+		<label class="mud-input-label mud-input-label-animated mud-input-label-text mud-input-label-inputcontrol">@Label</label>
+	</div>
 </div>
 <MudMenu Dense="true" @ref="MudMenu">
-    <ActivatorContent></ActivatorContent>
-    <ChildContent>
-        @foreach (var item in MenuItems)
-        {
-            <MudMenuItem OnClick="@(()=>SelectItem(item))">@item.Text</MudMenuItem>
-        }
-    </ChildContent>
+	<ActivatorContent></ActivatorContent>
+	<ChildContent>
+		@foreach (var item in MenuItems)
+		{
+			<MudMenuItem OnClick="@(()=>SelectItem(item))">@item.Text</MudMenuItem>
+		}
+	</ChildContent>
 </MudMenu>
 @code {
-    /// <summary>
-    /// If true, the selected item will be reset to null when the user types in the input field.This can happen
-    /// after the user either hits the 'Enter' key or selects an item from the list.
-    /// </summary>
-    [Parameter]
-    public bool? ResetOnSelect { get; set; }
-    /// <summary>
-    /// if true, it will fire the TextChanged event on every keypress event.
-    /// </summary>
-    [Parameter]
-    public bool? Immediate { get; set; }
-    /// <summary>
-    /// if immediate is enabled, it will fire the TextChanged event after the specified delay.
-    /// The unit is seconds.
-    /// </summary>
-    [Parameter]
-    public float Delay { get; set; }
-    [Parameter]
-    public string Label { get; set; }
-    [Parameter]
-    public List<ListItem<string, object>> Items { get; set; }    
-    string _Text { get; set; }
-    [Parameter]
-    public string Text
-    {
-        get
-        {
-            return _Text;
-        }
-        set
-        {
-            MenuItems = GetMenuItems(value);
-            if (MenuItems.Count > 0)
-                MudMenu.OpenMenu(null);
-            else
-                MudMenu.CloseMenu();
-            _Text = value;
-            if (Immediate == true)
-                _TextChanged();
-        }
-    }
-    [Parameter]
-    public Action<ListItem<string, object>> TextChanged { get; set; }    
-    MudMenu MudMenu { get; set; }
-    List<ListItem<string, object>> MenuItems = new List<ListItem<string, object>>();
-    bool IsMobile { get; set; }
-    private List<ListItem<string, object>> GetMenuItems(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return new List<ListItem<string, object>>();
-        else
-            return Items.Where(p => p.Text.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p).ToList();
-    }
-    protected async override Task OnInitializedAsync()
-    {
-        IsMobile = await Device.IsMobile();
-        await base.OnInitializedAsync();
-    }
-    void Enter(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter" || e.Code == "NumpadEnter")
-        {
-            _TextChanged();
-        }
-    }
-    void _TextChanged(){
-        Action fireEvent = () =>
-        {
-            var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
-            if (existingItem != null)
-                SelectItem(existingItem);
-            else
-                SelectItem(new ListItem<string, object>(Guid.NewGuid().ToString(), _Text));
-        };
-        if (Delay > 0)
-            Task.Delay((int)(Delay*1000)).ContinueWith(t => fireEvent());
-        else
-            fireEvent();
-    }
-    void SelectItem(ListItem<string, object> listItem)
-    {
-        _Text = listItem.Text;
-        if (TextChanged != null)
-            TextChanged(listItem);
-        if (ResetOnSelect.HasValue && ResetOnSelect.Value)
-            _Text = "";
-    }
+	/// <summary>
+	/// If true, the selected item will be reset to null when the user types in the input field.This can happen
+	/// after the user either hits the 'Enter' key or selects an item from the list.
+	/// </summary>
+	[Parameter]
+	public bool? ResetOnSelect { get; set; }
+	/// <summary>
+	/// if true, it will fire the TextChanged event on every keypress event.
+	/// </summary>
+	[Parameter]
+	public bool? Immediate { get; set; }
+	/// <summary>
+	/// If true the component will try to automatically detect the end of the input string.If Immediate is true, this will be ignored.
+	/// </summary>
+	[Parameter]
+	public bool AutoDetectInputEnd { get; set; }
+	[Parameter]
+	public string Label { get; set; }
+	[Parameter]
+	public List<ListItem<string, object>> Items { get; set; }
+	string _Text { get; set; }
+	[Parameter]
+	public string Text
+	{
+		get
+		{
+			return _Text;
+		}
+		set
+		{
+			MenuItems = GetMenuItems(value);
+			if (MenuItems.Count > 0)
+				MudMenu.OpenMenuAsync(null);
+			else
+				MudMenu.CloseMenuAsync();
+			_Text = value;
+			if (Immediate == true)
+				_TextChanged();
+		}
+	}
+	[Parameter]
+	public Action<ListItem<string, object>> TextChanged { get; set; }
+	MudMenu MudMenu { get; set; }
+	List<ListItem<string, object>> MenuItems = new List<ListItem<string, object>>();
+	bool IsMobile { get; set; }
+	DateTime? LastKeyPress = null;
+	Task SmartKeyDetection = null;
+	private List<ListItem<string, object>> GetMenuItems(string value)
+	{
+		if (string.IsNullOrEmpty(value))
+			return new List<ListItem<string, object>>();
+		else
+			return Items.Where(p => p.Text.Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(p => p).ToList();
+	}
+	protected async override Task OnInitializedAsync()
+	{
+		IsMobile = await Device.IsMobile();
+		await base.OnInitializedAsync();
+	}
+	void Enter(KeyboardEventArgs e)
+	{
+		if (e.Code == "Enter" || e.Code == "NumpadEnter")
+		{
+			_TextChanged();
+		}
+	}
+	void _TextChanged()
+	{
+		if (AutoDetectInputEnd)
+		{
+			if (!LastKeyPress.HasValue)
+			{
+				LastKeyPress = DateTime.Now;
+				StartSmartKeyDetection();
+			}
+		}
+		// Task.Delay((int)(Delay*1000)).ContinueWith(t => fireEvent());
+		else
+			FireEvent();
+	}
+	void SelectItem(ListItem<string, object> listItem)
+	{
+		_Text = listItem.Text;
+		if (TextChanged != null)
+			TextChanged(listItem);
+		if (ResetOnSelect.HasValue && ResetOnSelect.Value)
+			_Text = "";
+	}
+	void FireEvent() 
+		{
+			var existingItem = Items.FirstOrDefault(p => p.Text == _Text);
+			if (existingItem != null)
+				SelectItem(existingItem);
+			else
+				SelectItem(new ListItem<string, object>(Guid.NewGuid().ToString(), _Text));
+		}
+	void StartSmartKeyDetection()
+	{
+		if (SmartKeyDetection == null)
+		{
+			SmartKeyDetection = Task.Run(() =>
+				{
+					if (!LastKeyPress.HasValue)
+						return;
+					while (DateTime.Now - LastKeyPress.Value < TimeSpan.FromMilliseconds(500))
+					{
+						Task.Delay(100).Wait();
+					}
+					InvokeAsync(() =>
+					{
+						_TextChanged();
+						LastKeyPress = null;
+						SmartKeyDetection = null;
+					});
+				});
+		}
+	}
 }

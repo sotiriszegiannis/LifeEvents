@@ -18,7 +18,7 @@
                                 }
                                 @if (lifeEventGroupTags != null)
                                 {
-                                    <MudChipSet ReadOnly="true">
+                                    <MudChipSet T="object" ReadOnly="true">
                                         @foreach (var tag in lifeEventGroupTags!.Tags)
                                         {
                                             <StatisticsTag Tag="@tag" UtcDay="lifeEventGroup.FirstOrDefault().From.Value"></StatisticsTag>

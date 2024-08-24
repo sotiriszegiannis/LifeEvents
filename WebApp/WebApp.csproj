@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4" />
     <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="68.2.0.9" />
     <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="68.2" />
-    <PackageReference Include="MudBlazor" Version="6.2.1" />
+    <PackageReference Include="MudBlazor" Version="7.6.0" />
   </ItemGroup>
 
   <ItemGroup>

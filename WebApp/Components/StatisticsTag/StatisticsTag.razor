@@ -5,7 +5,7 @@
 <MudMenu Fixed="true" Class="px-4 pt-4">
     <ActivatorContent>
         <div @onclick="()=>OnClick()">
-            <MudChip Text="@Tag.Name" OnClick="()=>OnClick()"></MudChip>
+            <MudChip T="string" Text="@Tag.Name" OnClick="()=>OnClick()"></MudChip>
         </div>        
     </ActivatorContent>
     <ChildContent>
@@ -49,7 +49,7 @@
     public DateTime UtcDay { get; set; }
     UserRDTO User { get; set; }
     MudMenu mudMenu { get; set; }
-    MudChip TagMudChip { get; set; }
+    MudChip<string> TagMudChip { get; set; }
     _Stats Stats { get; set; }
     private async void OnClick()
     {        

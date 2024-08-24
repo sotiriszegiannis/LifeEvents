@@ -11,7 +11,7 @@
 							<div style="display:inline-block">
 								@if (lifeEvent.Tags != null && lifeEvent.Tags.Count > 0)
 								{
-									<MudChipSet ReadOnly="true">
+									<MudChipSet T="object" ReadOnly="true">
 										@foreach (var tag in lifeEvent.Tags)
 										{
 											<StatisticsTag Tag="@tag" UtcDay="lifeEvent.From.Value"></StatisticsTag>
