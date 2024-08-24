@@ -23,7 +23,7 @@
                 {
                     <div class="col-3">
                         <MudIconButton Icon="@Icons.Material.Filled.ArrowCircleLeft" OnClick="()=>ChangeDate(true)"></MudIconButton>
-                        <h3 class="cursor-pointer" style="display:inline" @onclick="()=>SelectedDateComponent.Open()">@DateRange?.From?.ToString("MMMM dd")</h3>
+                        <h3 class="cursor-pointer" style="display:inline" @onclick="()=>SelectedDateComponent.OpenAsync()">@DateRange?.From?.ToString("MMMM dd")</h3>
                         <div style="display:none">
                             <MudDatePicker @bind-Date="SelectedDate" @ref="SelectedDateComponent" />
                         </div>                        
@@ -41,11 +41,12 @@
         </div>
     </div>
 </div>
-<MudRadioGroup @bind-SelectedOption="@SelectedViewType">
-    <MudRadio Option="@("Grouped")" Color="Color.Primary">Grouped</MudRadio>
-    <MudRadio Option="@("Flat")" Color="Color.Secondary">Flat</MudRadio>
+<MudRadioGroup @bind-Value="SelectedViewType">
+    <MudRadio Value="@("Grouped")" Color="Color.Primary">Grouped</MudRadio>
+    <MudRadio Value="@("Flat")" Color="Color.Secondary">Flat</MudRadio>
 </MudRadioGroup>
-@if (_SelectedViewType == "Grouped")
+
+@if (SelectedViewType == "Grouped")
 {
     <GroupedLifeEventsList DateRange="DateRange" Filter="@KeyworkFilter"></GroupedLifeEventsList>
 }
@@ -100,18 +101,7 @@ else
                 }
         }
     }
-    string _SelectedViewType { get; set; } = "Grouped";
-    string SelectedViewType
-    {
-        get
-        {
-            return _SelectedViewType;
-        }
-        set
-        {
-            _SelectedViewType = value;
-        }
-    }
+    string SelectedViewType { get; set; } = "Grouped";
     protected async override Task OnInitializedAsync()
     {
         User = await UsersRepository.Get();

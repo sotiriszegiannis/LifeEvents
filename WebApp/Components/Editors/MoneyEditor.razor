@@ -1,9 +1,9 @@
 ﻿@using System.Globalization
 @using Domain
 <MudNumericField Immediate="true" Label="amount" Format="N2" Culture="@CultureInfo.GetCultureInfo("en-GR")" T="float?" @bind-Value="Amount" HelperText="amount" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" />
-<MudRadioGroup @bind-SelectedOption="@TransactionType">
-    <MudRadio Option="@MoneyTransactionTypeEnum.Income.ToString()" Color="Color.Primary">Income</MudRadio>
-    <MudRadio Option="@MoneyTransactionTypeEnum.Expense.ToString()">Expense</MudRadio>
+<MudRadioGroup T="string" @bind-Value="@TransactionType">
+    <MudRadio T="string" Value="@MoneyTransactionTypeEnum.Income.ToString()" Color="Color.Primary">Income</MudRadio>
+    <MudRadio T="string" Value="@MoneyTransactionTypeEnum.Expense.ToString()">Expense</MudRadio>
 </MudRadioGroup>
 @code {
     [Parameter]

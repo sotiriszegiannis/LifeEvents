@@ -6,6 +6,7 @@
 @using System.Security.Claims
 <MudThemeProvider />
 <MudDialogProvider />
+<MudPopoverProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
@@ -16,7 +17,7 @@
         <MudIconButton Icon="@Icons.Material.Outlined.AddCircle" Color="Color.Inherit" Style="Color:white" OnClick="()=>ShowLifeEventEditor()"/>
         <MudMenu AnchorOrigin="@Origin.BottomRight" TransformOrigin="@Origin.BottomRight" Style="width:fit-content">
             <ActivatorContent>
-                <MudChip Icon="@Icons.Material.Outlined.AccountCircle" Style="Color:white" />
+                <MudChip T="object" Icon="@Icons.Material.Outlined.AccountCircle" Style="Color:white" />
             </ActivatorContent>
             <ChildContent>
                 <MudMenuItem OnClick="@((e) => ProfileDrawerToggle())">Profile</MudMenuItem>
