@@ -1,5 +1,6 @@
 ﻿@inject ISnackbar Snackbar
-<MudDialog DisableSidePadding="true" @bind-IsVisible="DialogVisible" Options="DialogOptions">
+@inject IDialogService DialogService
+<MudDialog DisableSidePadding="true" @bind-Visible="DialogVisible" Options="DialogOptions">
     <DialogContent>
         <DynamicComponent Type="EditorType" @ref="EditorComponent" />
     </DialogContent>
@@ -16,7 +17,7 @@
     DialogOptions DialogOptions = new DialogOptions
         {
             CloseButton = true,
-            DisableBackdropClick = true,
+            BackdropClick= false,
             MaxWidth = MaxWidth.ExtraExtraLarge,
             FullWidth = true,
             Position = DialogPosition.TopCenter,
