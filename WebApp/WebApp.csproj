@@ -27,6 +27,11 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4" />
     <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="68.2.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.2" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="68.2" />
     <PackageReference Include="MudBlazor" Version="6.2.1" />
   </ItemGroup>
@@ -46,6 +51,8 @@
 
   <ItemGroup>
     <Folder Include="Components\MoneyTransactionsRelated\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="output\" />
   </ItemGroup>
 
 </Project>

@@ -1,21 +1,37 @@
 {
-  "name": "LifeEvents",
-  "short_name": "LifeEvents",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#03173d",
-  "prefer_related_applications": false,
-  "icons": [
-    {
-      "src": "icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    },
-    {
-      "src": "icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    }
-  ]
+    "name": "LifeEvents",
+    "short_name": "LifeEvents",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#03173d",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        },
+        {
+            "src": "icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/content/images/PWAScreenshots/img1.jpg",
+            "sizes": "1280x720",
+            "type": "image/jpeg",
+            "form_factor": "wide",
+            "label": "main screen"
+        },
+        {
+            "src": "/content/images/PWAScreenshots/img1-mobile.jpg",
+            "sizes": "540x720",
+            "type": "image/jpeg",
+            "form_factor": "narrow",
+            "label": "main screen"
+        }
+    ]
 }
