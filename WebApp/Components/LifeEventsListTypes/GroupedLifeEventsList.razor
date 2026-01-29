@@ -21,7 +21,7 @@
                                     <MudChipSet T="object" ReadOnly="true">
                                         @foreach (var tag in lifeEventGroupTags!.Tags)
                                         {
-                                            <StatisticsTag Tag="@tag" UtcDay="lifeEventGroup.FirstOrDefault().From.Value"></StatisticsTag>
+                                            <StatisticsTag Tag="@tag" UtcDay="DateRange.From!.Value"></StatisticsTag>
                                         }
                                     </MudChipSet>
                                 }
