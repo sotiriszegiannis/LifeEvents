@@ -1,0 +1,204 @@
+﻿@inject UsersRepository UsersRepository
+@inject MoneyRepository MoneyRepository
+@using Plotly.Blazor
+@using Plotly.Blazor.LayoutLib
+@using Plotly.Blazor.Traces
+
+<MudDialog>
+    <DialogContent>
+        <div style="max-height:80vh; overflow-y:auto;">
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="pa-4">
+                        <MudText Typo="Typo.caption">Total Income</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Success">@TotalIncome.ToString("N2")</MudText>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="pa-4">
+                        <MudText Typo="Typo.caption">Total Expenses</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Error">@TotalExpense.ToString("N2")</MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="pa-4">
+                        <MudText Typo="Typo.caption">Balance</MudText>
+                        <MudText Typo="Typo.h4" Color="@(Balance >= 0 ? Color.Success : Color.Error)">
+                            @Balance.ToString("N2")
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <PlotlyChart Data="@Data"
+                         Layout="@ChartLayout"
+                         OnClick="OnPointClick"
+                         Style="width:100%;height:300px;" />
+            <MudChipSet SingleSelection="true" @bind-SelectedValue="_selectedMonth">
+                @foreach (var m in Months)
+                {
+                    <MudChip Value="m" OnClick="@(() => SelectMonth(m))">
+                        @m.ToString("MMM-''yy")
+                    </MudChip>
+                }
+            </MudChipSet>
+
+            <MudPaper Class="pa-2 mb-2" Elevation="0" Style="background-color:#f5f5f5">
+                <MudGrid Dense="true">
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.caption">Income</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Success">@MonthIncome.ToString("N2")</MudText>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.caption">Expense</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Error">@MonthExpense.ToString("N2")</MudText>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.caption">Balance</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="@(MonthBalance >= 0 ? Color.Success : Color.Error)">
+                            @MonthBalance.ToString("N2")
+                        </MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+
+            @if (IsLoading)
+            {
+                <div class="d-flex justify-center pa-6">
+                    <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else
+            {
+                <PlotlyChart @bind-Data="TagData"
+                             @bind-Layout="TagLayout"
+                             @ref="TagChart"
+                             Style="width:100%;height:380px;" />
+            }
+
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private List<DateTime> Months = new();
+    private PlotlyChart? TagChart;
+    private DateTime _selectedMonth;
+
+    private string Title { get; set; } = "Monthly Totals";
+    private string[] XAxisLabels { get; set; } = Array.Empty<string>();
+    private double[] IncomeValues { get; set; } = Array.Empty<double>();
+    private double[] ExpenseValues { get; set; } = Array.Empty<double>();
+
+    private IList<ITrace> Data = new List<ITrace>();
+    private Layout ChartLayout = new();
+    private IList<ITrace> TagData = new List<ITrace>();
+    private Layout TagLayout = new();
+    private UserRDTO User = null;
+
+    private float TotalIncome;
+    private float TotalExpense;
+    private float Balance;
+
+    private double MonthIncome;
+    private double MonthExpense;
+    private double MonthBalance;
+
+    private List<MoneyTransactionPerMonthRDTO> IncomeStats;
+    private List<MoneyTransactionPerMonthRDTO> ExpenseStats;
+
+    private bool IsLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UsersRepository.Get();
+        User = new UserRDTO()
+        {
+            Id = user.Id,
+            TimeZone = user.TimeZone,
+            Name = user.Name
+        };
+        IncomeStats = await MoneyRepository.GetPerMonth(
+            DateTime.UtcNow.AddYears(-1),
+            DateTime.UtcNow,
+            User,
+        Domain.MoneyTransactionTypeEnum.Income);
+        XAxisLabels = IncomeStats.Select(x => x.Month.ToString("MMM-''yy")).ToArray();
+        IncomeValues = IncomeStats.Select(x => (double)x.Amount).ToArray();
+
+        ExpenseStats = await MoneyRepository.GetPerMonth(
+            DateTime.UtcNow.AddYears(-1),
+            DateTime.UtcNow,
+            User,
+        Domain.MoneyTransactionTypeEnum.Expense);
+        ExpenseValues = ExpenseStats.Select(x => (double)x.Amount).ToArray();
+        ChartLayout = new Layout
+        {
+            Title = new Title { Text = Title }
+        };
+
+        Data = new List<ITrace>
+        {
+            new Scatter
+            {
+                Name = "Income",
+                Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines | Plotly.Blazor.Traces.ScatterLib.ModeFlag.Markers,
+                Line = new Plotly.Blazor.Traces.ScatterLib.Line { Color = "green" },
+                Marker = new Plotly.Blazor.Traces.ScatterLib.Marker { Color = "green" },
+                X = XAxisLabels.Cast<object>().ToArray(),
+                Y = IncomeValues.Cast<object>().ToArray()
+            },
+            new Scatter
+            {
+                Name = "Expenses",
+                Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines | Plotly.Blazor.Traces.ScatterLib.ModeFlag.Markers,
+                Line = new Plotly.Blazor.Traces.ScatterLib.Line { Color = "red" },
+                Marker = new Plotly.Blazor.Traces.ScatterLib.Marker { Color = "red" },
+                X = XAxisLabels.Cast<object>().ToArray(),
+                Y = ExpenseValues.Cast<object>().ToArray()
+            }
+        };
+
+        TotalIncome = IncomeStats.Sum(p=>p.Amount);
+        TotalExpense = ExpenseStats.Sum(p => p.Amount);
+        Balance = TotalIncome - TotalExpense;
+
+        Months = IncomeStats.Select(x => x.Month.Date).Distinct().OrderBy(x => x).ToList();
+        _selectedMonth = Months.Last(); // default: latest
+        await LoadMonth(_selectedMonth);        
+
+        await base.OnInitializedAsync();
+    }
+    private async Task SelectMonth(DateTime month) => await LoadMonth(month);
+    private async Task LoadMonth(DateTime month)
+    {
+        IsLoading = true;
+        var from = new DateTime(month.Year, month.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var to = from.AddMonths(1);
+
+        var items = await MoneyRepository.Get10MostTagsPerMonth(from, to, User);
+
+        var x = items.Select(i => (object)i.Name).ToArray();
+
+        TagData = new List<ITrace>
+        {
+            new Bar { Name="Expenses", X=x, Y=items.Select(i => (object)(double)i.ExpenseAmount).ToArray() },
+            new Bar { Name="Income",   X=x, Y=items.Select(i => (object)(double)i.IncomeAmount).ToArray() }
+        };
+
+        TagLayout = new Layout
+        {
+            Title = new Title { Text = $"By Tag ({month:MMM-''yy})" },
+            BarMode = Plotly.Blazor.LayoutLib.BarModeEnum.Group
+        };
+        MonthIncome = IncomeStats.Where(p => p.Month.Year == month.Year && p.Month.Month == month.Month).FirstOrDefault()!.Amount;
+        MonthExpense = ExpenseStats.Where(p => p.Month.Year == month.Year && p.Month.Month == month.Month).FirstOrDefault()!.Amount;
+        MonthBalance = MonthIncome - MonthExpense;
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+        if (TagChart != null)
+            await TagChart.React();
+    }
+}

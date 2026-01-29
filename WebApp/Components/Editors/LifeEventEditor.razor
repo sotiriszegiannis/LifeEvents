@@ -129,6 +129,8 @@
             LifeEvent.Title = lifeEvent.Title;
             //LifeEvent.Description = lifeEvent.Description;
             LifeEvent.Location = lifeEvent.Location;
+            MoneyTransaction.Amount = lifeEvent.MoneyTransaction?.Amount??0;
+            MoneyTransaction.Type = lifeEvent.MoneyTransaction?.Type ?? Domain.MoneyTransactionTypeEnum.Income;
             StateHasChanged();
         }
     }

@@ -35,6 +35,10 @@
             InvokeEvent();
         }
     }
+    protected override void OnParametersSet()
+    {
+        _TransactionType = MoneyTransaction.Type.ToString();
+    }
     async void InvokeEvent()
     {
         await MoneyTransactionChanged.InvokeAsync(new MoneyTransactionDTO()

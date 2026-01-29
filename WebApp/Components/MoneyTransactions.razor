@@ -6,7 +6,7 @@
         {
             <div class="">
                 <li class="list-inline-item">
-                    <MudButton OnClick="@(async () => await OpenChart(Domain.MoneyTransactionTypeEnum.Income))">
+                    <MudButton OnClick="@(() => OpenChart())">
                         <div style="display:flex;color:white">
                             <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Success" />
                             <h5 class="mb-1">
@@ -21,7 +21,7 @@
             @if (Expenses > 0)
             {
                 <li class="list-inline-item">
-                    <MudButton OnClick="@(async () => await OpenChart(Domain.MoneyTransactionTypeEnum.Expense))">
+                    <MudButton OnClick="@(() => OpenChart())">
                         <div style="display:flex;color:white">
                             <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Error" />
                             <h5 class="mb-1">
@@ -52,28 +52,10 @@
         await base.OnParametersSetAsync();
         // Update your UI here
     }
-    private async Task OpenChart(Domain.MoneyTransactionTypeEnum type)
+    private void OpenChart()
     {
-        var User = await UsersRepository.Get();
-        var results = await MoneyRepository.GetPerMonth(
-            DateTime.UtcNow.AddYears(-1),
-            DateTime.UtcNow,
-            new UserRDTO()
-        {
-			Id = User.Id,
-			TimeZone = User.TimeZone,
-			Name = User.Name
-        },
-        type);
-        var parameters = new DialogParameters
-        {
-            { "Title", type.ToString() },
-            { "XAxisLabels", results.Select(x => x.Month.ToString("MMM")).ToArray() },
-            { "YAxisValues", results.Select(x => (double)x.Amount).ToArray() }
-        };
-
         var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
-        DialogService.Show<MoneyLineChart>("Report", parameters,options);
+        DialogService.Show<MonthlyFinancialsChart>("Monthly rate", options);
     }
     private async Task UpdateUI()
     {
