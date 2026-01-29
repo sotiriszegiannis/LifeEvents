@@ -47,6 +47,7 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseMigrationsEndPoint();
+            app.UseDeveloperExceptionPage();
         }
         else
         {

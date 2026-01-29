@@ -1,17 +1,19 @@
 ﻿@inject UsersRepository UsersRepository
 @inject MoneyRepository MoneyRepository
 <div>
-    <div class="d-flex flex-row">
+    <div class="d-flex flex-row">        
         @if (Income > 0)
         {
             <div class="">
                 <li class="list-inline-item">
-                    <div style="display:flex">
-                        <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Success" />
-                        <h5 class="mb-1">
-                            € +@Income
-                        </h5>
-                    </div>
+                    <MudButton OnClick="@(() => OpenChart())">
+                        <div style="display:flex;color:white">
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Color="Color.Success" />
+                            <h5 class="mb-1">
+                                € +@Income
+                            </h5>
+                        </div>
+                    </MudButton>
                 </li>
             </div>
         }
@@ -19,19 +21,22 @@
             @if (Expenses > 0)
             {
                 <li class="list-inline-item">
-                    <div style="display:flex">
-                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Error" />
-                        <h5 class="mb-1">
-                            € -@Expenses
-                        </h5>
-                    </div>
+                    <MudButton OnClick="@(() => OpenChart())">
+                        <div style="display:flex;color:white">
+                            <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Color="Color.Error" />
+                            <h5 class="mb-1">
+                                € -@Expenses
+                            </h5>
+                        </div>
+                    </MudButton>                    
                 </li>
             }
-        </div>        
+        </div>
     </div>
 </div>
 
 @code {
+    [Inject] IDialogService DialogService { get; set; } = default!;
     int Income { get; set; }
     int Expenses { get; set; }
     [Parameter]
@@ -46,6 +51,11 @@
         await UpdateUI();
         await base.OnParametersSetAsync();
         // Update your UI here
+    }
+    private void OpenChart()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
+        DialogService.Show<MonthlyFinancialsChart>("Monthly rate", options);
     }
     private async Task UpdateUI()
     {
