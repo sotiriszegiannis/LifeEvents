@@ -119,10 +119,10 @@
             Id = user.Id,
             TimeZone = user.TimeZone,
             Name = user.Name
-        };
+        };        
         IncomeStats = await MoneyRepository.GetPerMonth(
             DateTime.UtcNow.AddYears(-1),
-            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(1),
             User,
         Domain.MoneyTransactionTypeEnum.Income);
         XAxisLabels = IncomeStats.Select(x => x.Month.ToString("MMM-''yy")).ToArray();
@@ -130,7 +130,7 @@
 
         ExpenseStats = await MoneyRepository.GetPerMonth(
             DateTime.UtcNow.AddYears(-1),
-            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(1),
             User,
         Domain.MoneyTransactionTypeEnum.Expense);
         ExpenseValues = ExpenseStats.Select(x => (double)x.Amount).ToArray();
