@@ -34,10 +34,22 @@ jobs:
         Import-Module WebAdministration
         Stop-WebSite -Name "LifeEvents"
       shell: powershell
-    
+
+    - name: Stop App Pool
+      run: |
+        Import-Module WebAdministration
+        Stop-WebAppPool -Name "LifeEvents"
+      shell: powershell
+     
     - name: Deploy Files to IIS
       run: |
         xcopy /s /e /y ".\output" "C:\inetpub\wwwroot\LifeEvents"
+
+    - name: Start App Pool
+      run: |
+        Import-Module WebAdministration
+        Start-WebAppPool -Name "LifeEvents"
+      shell: powershell
 
     - name: Start IIS Site
       run: |
